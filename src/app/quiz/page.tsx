@@ -249,14 +249,14 @@ export default function QuizPage() {
           </div>
           
           <div className="border rounded-xl p-6 bg-gradient-to-r from-blue-50 to-blue-100 shadow-inner">
-            <h3 className="text-xl font-semibold mb-5 text-blue-800">{currentQuestion.question}</h3>
+            <h3 className="text-md sm:text-xl font-semibold mb-5 text-blue-800">{currentQuestion.question}</h3>
             
             <div className="space-y-3">
               {currentQuestion.options.map((option, index) => (
                 <div 
                   key={index}
                   onClick={() => handleAnswerSelect(index)}
-                  className={`p-4 border rounded-lg cursor-pointer transition-all shadow-sm hover:shadow ${
+                  className={`p-2 sm:p-4 border rounded-lg cursor-pointer transition-all shadow-sm hover:shadow ${
                     selectedAnswer === null
                       ? "hover:bg-blue-100 border-blue-200"
                       : selectedAnswer === index
