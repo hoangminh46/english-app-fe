@@ -31,6 +31,7 @@ export default function Home() {
     difficulty: "Trung cấp",
     quantity: 10,
   });
+  const [isNavigating, setIsNavigating] = useState(false);
 
   // Sử dụng react-query để gọi API
   const generateQuizMutation = useMutation({
@@ -49,13 +50,16 @@ export default function Home() {
       // Lưu dữ liệu mới vào localStorage để có thể truy cập ở trang /quiz
       localStorage.setItem('quizData', JSON.stringify(data));
       
+      // Đánh dấu đang trong quá trình chuyển trang
+      setIsNavigating(true);
+      
       // Điều hướng đến trang /quiz
       router.push('/quiz');
     },
     onError: (error) => {
       // Hiển thị thông báo lỗi
-      toast.error("Server đang quá tải, vui lòng thử lại", {
-        duration: 3000,
+      toast.error("Tạo câu hỏi thất bại, vui lòng thử lại sau!", {
+        duration: 3000
       });
       console.error("Error generating quiz:", error);
     }
@@ -230,7 +234,7 @@ export default function Home() {
         variants={containerVariants}
       >
         {/* Loading Overlay */}
-        <LoadingOverlay isLoading={generateQuizMutation.isPending} />
+        <LoadingOverlay isLoading={generateQuizMutation.isPending || isNavigating} />
 
         <div className="max-w-3xl mx-auto">
           <StepIndicator currentStep={currentStep} totalSteps={3} />

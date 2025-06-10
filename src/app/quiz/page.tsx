@@ -146,7 +146,7 @@ export default function QuizPage() {
   if (showResults) {
     const score = calculateScore();
     const totalQuestions = quizData.questions.length;
-    const percentage = (score ?? 0 / totalQuestions) * 100;
+    const percentage = ((score ?? 0) / totalQuestions) * 100;
     
     return (
       <div className="min-h-screen bg-gradient-to-b from-blue-100 to-blue-300 py-12 px-4 sm:px-6 lg:px-8">

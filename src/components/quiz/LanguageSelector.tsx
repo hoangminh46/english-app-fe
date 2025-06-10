@@ -56,11 +56,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
             }`}
             onClick={() => onSelectLanguage(language)}
           >
-            <div className={`relative w-8 h-8 mr-3 rounded-lg overflow-hidden ${
-              selectedLanguage === language
-                ? "ring-2 ring-blue-500"
-                : "ring-1 ring-gray-200 group-hover:ring-blue-300"
-            }`}>
+            <div className={`relative w-8 h-8 mr-3 rounded-lg overflow-hidden`}>
               <Image
                 src={languageInfo[language].imagePath}
                 alt={`${language} icon`}

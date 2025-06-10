@@ -30,7 +30,17 @@ export default function RootLayout({
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
         <QueryProvider>{children}</QueryProvider>
-        <Toaster />
+        <Toaster 
+          position="top-center" 
+          toastOptions={{
+            className: "bg-blue-50 border-blue-200 text-blue-700",
+            style: {
+              background: "linear-gradient(to right, #EFF6FF, #DBEAFE)",
+              border: "1px solid #BFDBFE",
+              color: "#1D4ED8"
+            }
+          }}
+        />
       </body>
     </html>
   );
