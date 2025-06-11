@@ -11,6 +11,8 @@ type QuizCustomizerProps = {
   onClearAllTopics: () => void;
   onDifficultyChange: (difficulty: string) => void;
   onQuantityChange: (quantity: number) => void;
+  onCategorySelect: (categoryName: string) => void;
+  onMainTopicSelect: (topicName: string) => void;
 };
 
 export const QuizCustomizer: React.FC<QuizCustomizerProps> = ({
@@ -19,7 +21,9 @@ export const QuizCustomizer: React.FC<QuizCustomizerProps> = ({
   onRemoveTopic,
   onClearAllTopics,
   onDifficultyChange,
-  onQuantityChange
+  onQuantityChange,
+  onCategorySelect,
+  onMainTopicSelect
 }) => {
   return (
     <div className="space-y-8">
@@ -29,11 +33,12 @@ export const QuizCustomizer: React.FC<QuizCustomizerProps> = ({
       
       {/* Topic selection */}
       <TopicSelector
-        selectedLanguage={formData.language}
-        selectedTopics={formData.topic}
+        selectedTopics={formData.subtopics}
         onTopicToggle={onTopicToggle}
         onRemoveTopic={onRemoveTopic}
         onClearAll={onClearAllTopics}
+        onCategorySelect={onCategorySelect}
+        onMainTopicSelect={onMainTopicSelect}
       />
       
       {/* Difficulty selection */}

@@ -27,9 +27,11 @@ export default function Home() {
   const [formData, setFormData] = useState<FormData>({
     audience: "",
     language: "",
-    topic: [],
+    subtopics: [],
     difficulty: "Trung cấp",
     quantity: 10,
+    category: "",
+    mainTopic: "",
   });
   const [isNavigating, setIsNavigating] = useState(false);
 
@@ -88,26 +90,34 @@ export default function Home() {
 
   const handleLanguageSelect = (language: string) => {
     // When selecting a new language, clear previously selected topics
-    setFormData({ ...formData, language, topic: [] });
+    setFormData({ ...formData, language, subtopics: [] });
+  };
+
+  const handleCategorySelect = (categoryName: string) => {
+    setFormData({ ...formData, category: categoryName, mainTopic: "", subtopics: [] });
+  };
+
+  const handleMainTopicSelect = (topicName: string) => {
+    setFormData({ ...formData, mainTopic: topicName, subtopics: [] });
   };
 
   // Handle topic selection/deselection
   const handleTopicToggle = (topicName: string) => {
     // Check if the topic is already selected
-    const isSelected = formData.topic.includes(topicName);
+    const isSelected = formData.subtopics.includes(topicName);
     
     if (isSelected) {
       // If already selected, deselect it
       setFormData({
         ...formData,
-        topic: formData.topic.filter(name => name !== topicName)
+        subtopics: formData.subtopics.filter(name => name !== topicName),
       });
     } else {
       // If not selected and haven't reached the limit, add it
-      if (formData.topic.length < 3) {
+      if (formData.subtopics.length < 3) {
         setFormData({
           ...formData,
-          topic: [...formData.topic, topicName]
+          subtopics: [...formData.subtopics, topicName],
         });
       }
     }
@@ -117,14 +127,14 @@ export default function Home() {
   const handleRemoveTopic = (topicName: string) => {
     setFormData({
       ...formData,
-      topic: formData.topic.filter(name => name !== topicName)
+      subtopics: formData.subtopics.filter(name => name !== topicName)
     });
   };
 
   const handleClearAllTopics = () => {
     setFormData({
       ...formData,
-      topic: []
+      subtopics: []
     });
   };
 
@@ -145,7 +155,7 @@ export default function Home() {
   const canGoNext = 
     (currentStep === 1 && formData.audience) ||
     (currentStep === 2 && formData.language) ||
-    (currentStep === 3 && formData.topic.length > 0);
+    (currentStep === 3 && formData.subtopics.length > 0);
 
   // Animation variants
   const containerVariants = {
@@ -289,6 +299,8 @@ export default function Home() {
                     onClearAllTopics={handleClearAllTopics}
                     onDifficultyChange={handleDifficultyChange}
                     onQuantityChange={handleQuantityChange}
+                    onCategorySelect={handleCategorySelect}
+                    onMainTopicSelect={handleMainTopicSelect}
                   />
                 </motion.div>
               )}

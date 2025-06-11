@@ -6,21 +6,25 @@ type LanguageInfo = {
   [key in typeof languages[number]]: {
     imagePath: string;
     code: string;
+    isSupported: boolean;
   }
 }
 
 const languageInfo: LanguageInfo = {
   "Tiếng Anh": {
     imagePath: "/images/england.png",
-    code: "GB"
+    code: "GB",
+    isSupported: true
   },
   "Tiếng Nhật": {
     imagePath: "/images/japan.png",
-    code: "JP"
+    code: "JP",
+    isSupported: false
   },
   "Tiếng Trung": {
     imagePath: "/images/china.png",
-    code: "CN"
+    code: "CN",
+    isSupported: false
   }
 };
 
@@ -49,24 +53,34 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
           <button
             key={language}
             type="button"
-            className={`group p-4 border rounded-lg transition-all duration-300 flex items-center ${
+            disabled={!languageInfo[language].isSupported}
+            className={`group p-4 border rounded-lg transition-all duration-300 flex items-center justify-between ${
               selectedLanguage === language
                 ? "border-blue-500 bg-blue-50 text-blue-600"
-                : "border-gray-200 hover:border-blue-300 hover:bg-gray-50"
+                : languageInfo[language].isSupported
+                ? "border-gray-200 hover:border-blue-300 hover:bg-gray-50"
+                : "border-gray-200 bg-gray-100 cursor-not-allowed opacity-60"
             }`}
-            onClick={() => onSelectLanguage(language)}
+            onClick={() => languageInfo[language].isSupported && onSelectLanguage(language)}
           >
-            <div className={`relative w-8 h-8 mr-3 rounded-lg overflow-hidden`}>
-              <Image
-                src={languageInfo[language].imagePath}
-                alt={`${language} icon`}
-                fill
-                className="object-cover"
-              />
+            <div className="flex items-center">
+              <div className={`relative w-8 h-8 mr-3 rounded-lg overflow-hidden`}>
+                <Image
+                  src={languageInfo[language].imagePath}
+                  alt={`${language} icon`}
+                  fill
+                  className="object-cover"
+                />
+              </div>
+              <span className="text-lg font-medium">
+                {language}
+              </span>
             </div>
-            <span className="text-lg font-medium">
-              {language}
-            </span>
+            {!languageInfo[language].isSupported && (
+              <span className="text-sm text-gray-500 italic">
+                đang phát triển
+              </span>
+            )}
           </button>
         ))}
       </div>
