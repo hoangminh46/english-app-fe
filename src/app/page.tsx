@@ -13,11 +13,11 @@ import { AudienceSelector } from "../components/quiz/AudienceSelector";
 import { LanguageSelector } from "../components/quiz/LanguageSelector";
 import { QuizCustomizer } from "../components/quiz/QuizCustomizer";
 import { motion, AnimatePresence } from "framer-motion";
+import { QuizTypeSelector } from "../components/quiz/QuizTypeSelector";
 
-// Định nghĩa các bước trong ứng dụng
 enum AppStep {
   WELCOME = "welcome",
-  SETUP = "setup" // Các bước tạo quiz: audience, language, customizer
+  SETUP = "setup"
 }
 
 export default function Home() {
@@ -34,8 +34,8 @@ export default function Home() {
     mainTopic: "",
   });
   const [isNavigating, setIsNavigating] = useState(false);
+  const [selectedQuizType, setSelectedQuizType] = useState<'quick' | 'custom' | null>(null);
 
-  // Sử dụng react-query để gọi API
   const generateQuizMutation = useMutation({
     mutationFn: async (data: FormData) => {
       const response = await axios.post<QuizResponse>(
@@ -45,34 +45,66 @@ export default function Home() {
       return response.data;
     },
     onSuccess: (data) => {
-      // Xóa dữ liệu câu hỏi cũ và tiến trình làm bài trước khi lưu dữ liệu mới
-      localStorage.removeItem('quizProgress');
-      localStorage.removeItem('quizData');
-      
-      // Lưu dữ liệu mới vào localStorage để có thể truy cập ở trang /quiz
-      localStorage.setItem('quizData', JSON.stringify(data));
-      
-      // Đánh dấu đang trong quá trình chuyển trang
-      setIsNavigating(true);
-      
-      // Điều hướng đến trang /quiz
-      router.push('/quiz');
+      handleQuizSuccess(data);
     },
     onError: (error) => {
-      // Hiển thị thông báo lỗi
-      toast.error("Tạo câu hỏi thất bại, vui lòng thử lại sau!", {
-        duration: 3000
-      });
-      console.error("Error generating quiz:", error);
+      handleQuizError(error);
     }
   });
+
+  const generateQuickQuizMutation = useMutation({
+    mutationFn: async () => {
+      const response = await axios.post<QuizResponse>(
+        "http://localhost:5000/api/quick-quiz"
+      );
+      return response.data;
+    },
+    onSuccess: (data) => {
+      handleQuizSuccess(data);
+    },
+    onError: (error) => {
+      handleQuizError(error);
+    }
+  });
+
+  const handleQuizSuccess = (data: QuizResponse) => {
+    // Xóa dữ liệu câu hỏi cũ và tiến trình làm bài trước khi lưu dữ liệu mới
+    localStorage.removeItem('quizProgress');
+    localStorage.removeItem('quizData');
+    
+    // Lưu dữ liệu mới vào localStorage để có thể truy cập ở trang /quiz
+    localStorage.setItem('quizData', JSON.stringify(data));
+    
+    // Đánh dấu đang trong quá trình chuyển trang
+    setIsNavigating(true);
+    
+    // Điều hướng đến trang /quiz
+    router.push('/quiz');
+  };
+
+  const handleQuizError = (error: unknown) => {
+    // Hiển thị thông báo lỗi
+    toast.error("Tạo câu hỏi thất bại, vui lòng thử lại sau!", {
+      duration: 3000
+    });
+    console.error("Error generating quiz:", error);
+  };
 
   const handleStartApp = () => {
     setAppStep(AppStep.SETUP);
   };
 
   const handleNext = () => {
-    setCurrentStep((prev) => prev + 1);
+    if (currentStep === 3 && selectedQuizType) {
+      // Nếu đang ở bước chọn loại quiz và đã chọn loại
+      if (selectedQuizType === 'quick') {
+        generateQuickQuizMutation.mutate();
+      } else {
+        setCurrentStep((prev) => prev + 1);
+      }
+    } else {
+      setCurrentStep((prev) => prev + 1);
+    }
   };
 
   const handleBack = () => {
@@ -151,11 +183,16 @@ export default function Home() {
     generateQuizMutation.mutate(formData);
   };
 
-  // Xác định nút Next có được kích hoạt hay không
+  const handleQuizTypeSelect = (type: 'quick' | 'custom') => {
+    setSelectedQuizType(type);
+  };
+
+  // Cập nhật điều kiện để kích hoạt nút Next
   const canGoNext = 
     (currentStep === 1 && formData.audience) ||
     (currentStep === 2 && formData.language) ||
-    (currentStep === 3 && formData.subtopics.length > 0);
+    (currentStep === 3 && selectedQuizType !== null) ||
+    (currentStep === 4 && formData.subtopics.length > 0);
 
   // Animation variants
   const containerVariants = {
@@ -244,10 +281,10 @@ export default function Home() {
         variants={containerVariants}
       >
         {/* Loading Overlay */}
-        <LoadingOverlay isLoading={generateQuizMutation.isPending || isNavigating} />
+        <LoadingOverlay isLoading={generateQuizMutation.isPending || generateQuickQuizMutation.isPending || isNavigating} />
 
         <div className="max-w-3xl mx-auto">
-          <StepIndicator currentStep={currentStep} totalSteps={3} />
+          <StepIndicator currentStep={currentStep} totalSteps={4} />
 
           <motion.div 
             className="bg-white shadow-lg rounded-xl p-8 mb-6 border border-blue-100"
@@ -286,6 +323,21 @@ export default function Home() {
 
               {currentStep === 3 && (
                 <motion.div
+                  key="quiz-type"
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <QuizTypeSelector 
+                    onSelectQuizType={handleQuizTypeSelect}
+                    selectedType={selectedQuizType}
+                  />
+                </motion.div>
+              )}
+
+              {currentStep === 4 && (
+                <motion.div
                   key="customizer"
                   initial={{ opacity: 0, x: 50 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -310,9 +362,9 @@ export default function Home() {
           <motion.div variants={itemVariants}>
             <NavigationButtons 
               currentStep={currentStep}
-              totalSteps={3}
+              totalSteps={4}
               canGoNext={canGoNext as boolean}
-              isSubmitting={generateQuizMutation.isPending}
+              isSubmitting={generateQuizMutation.isPending || generateQuickQuizMutation.isPending}
               onBack={handleBack}
               onNext={handleNext}
               onSubmit={handleSubmit}
