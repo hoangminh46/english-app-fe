@@ -1,22 +1,29 @@
 import React, { useState } from 'react';
-import { categories, Topic } from '../../types/quiz';
+import { categories, difficulties, Topic } from '../../types/quiz';
+import { quantityOptions } from '../../types/quiz';
 
 type TopicSelectorProps = {
   selectedTopics: string[];
   onTopicToggle: (topicName: string) => void;
   onRemoveTopic: (topicName: string) => void;
-  onClearAll: () => void;
   onCategorySelect: (categoryName: string) => void;
   onMainTopicSelect: (topicName: string) => void;
+  selectedQuantity: number;
+  onQuantityChange: (quantity: number) => void;
+  selectedDifficulty: string;
+  onDifficultyChange: (difficulty: string) => void;
 };
 
 export const TopicSelector: React.FC<TopicSelectorProps> = ({
   selectedTopics,
   onTopicToggle,
   onRemoveTopic,
-  onClearAll,
   onCategorySelect,
-  onMainTopicSelect
+  onMainTopicSelect,
+  selectedQuantity,
+  onQuantityChange,
+  selectedDifficulty,
+  onDifficultyChange
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('');
   const [selectedMainTopic, setSelectedMainTopic] = useState<string>('');
@@ -93,7 +100,7 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
             <button
               key={category.id}
               onClick={() => handleCategorySelect(category.id)}
-              className={`p-4 rounded-lg border text-left transition-all ${
+              className={`p-3 md:p-4 rounded-lg border text-left transition-all ${
                 selectedCategory === category.id
                   ? "border-blue-500 bg-blue-50"
                   : "border-gray-200 hover:border-blue-200 hover:bg-gray-50"
@@ -119,7 +126,7 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
               <button
                 key={topic.id}
                 onClick={() => handleMainTopicSelect(topic.id)}
-                className={`p-4 rounded-lg border text-left transition-all ${
+                className={`p-3 md:p-4 rounded-lg border text-left transition-all ${
                   selectedMainTopic === topic.id
                     ? "border-blue-500 bg-blue-50"
                     : "border-gray-200 hover:border-blue-200 hover:bg-gray-50"
@@ -147,50 +154,101 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
         </div>
       )}
 
-      {/* Selected Topics Info */}
-      <div className="px-2 sm:px-0">
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
-          <div className="text-sm font-medium text-blue-500">
-            Đã chọn: {selectedTopics.length}/3
-          </div>
-          {selectedTopics.length > 0 && (
+      <div>
+        <h3 className="text-lg font-medium mb-3 text-blue-600">Độ khó</h3>
+        <div className="flex flex-wrap gap-3">
+          {difficulties.map((item) => (
             <button
-              className="text-sm text-gray-500 hover:text-red-500 transition-colors"
-              onClick={onClearAll}
+              key={item.value}
+              type="button"
+              className={`px-4 py-2 rounded-lg transition-all shadow-sm ${
+                selectedDifficulty === item.label
+                  ? "bg-gradient-to-r from-blue-400 to-blue-600 text-white shadow-md hover:shadow-lg"
+                  : "bg-blue-50 text-blue-700 hover:bg-blue-100"
+              }`}
+              onClick={() => onDifficultyChange(item.label)}
             >
-              Xóa tất cả
+              {item.label}
             </button>
-          )}
+          ))}
         </div>
+      </div>
 
-        {selectedTopics.length > 0 && (
-          <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
-            <div className="text-sm text-blue-600 mb-2">Chủ đề đã chọn:</div>
-            <div className="flex flex-wrap gap-2">
-              {selectedTopics.map((topicName) => (
-                <div
-                  key={topicName}
-                  className="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 rounded-full text-sm font-medium flex items-center gap-1 shadow-sm"
-                >
-                  <span className="truncate max-w-[200px]">{topicName}</span>
-                  <button
-                    type="button"
-                    className="ml-1 text-blue-600 hover:text-blue-800 focus:outline-none flex-shrink-0"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onRemoveTopic(topicName);
-                    }}
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor" className="w-4 h-4">
-                      <path d="M6.28 5.22a.75.75 0 00-1.06 1.06L8.94 10l-3.72 3.72a.75.75 0 101.06 1.06L10 11.06l3.72 3.72a.75.75 0 101.06-1.06L11.06 10l3.72-3.72a.75.75 0 00-1.06-1.06L10 8.94 6.28 5.22z" />
-                    </svg>
-                  </button>
+      <div>
+        <h3 className="text-lg font-medium mb-3 text-blue-600">Số lượng câu hỏi</h3>
+        <div className="flex flex-wrap gap-3">
+          {quantityOptions.map((qty) => (
+            <button
+              key={qty}
+              type="button"
+              className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all shadow-sm ${
+                selectedQuantity === qty
+                  ? "bg-gradient-to-r from-blue-400 to-blue-600 text-white shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                  : "bg-blue-50 text-blue-700 hover:bg-blue-100"
+              }`}
+              onClick={() => onQuantityChange(qty)}
+            >
+              {qty}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {selectedTopics.length > 0 && (
+        <div className="mt-3 p-4 bg-blue-50 rounded-lg border border-blue-100">
+          <div className="text-lg font-medium text-blue-600 mb-3">Thiết lập đã chọn</div>
+          <div className="space-y-3">
+            {/* Category and Main Topic */}
+            {selectedCategory && (
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-medium text-blue-600">Danh mục:</span>
+                <div className="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 rounded-lg text-sm">
+                  {categories.find(cat => cat.id === selectedCategory)?.name}
                 </div>
-              ))}
+              </div>
+            )}
+            {selectedMainTopic && (
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-medium text-blue-600">Chủ đề chính:</span>
+                <div className="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 rounded-lg text-sm">
+                  {currentCategory?.topics.find(topic => topic.id === selectedMainTopic)?.name}
+                </div>
+              </div>
+            )}
+
+            {/* Selected Subtopics */}
+            <div className="flex flex-col gap-1">
+              <span className="text-sm font-medium text-blue-600">Chủ đề con đã chọn:</span>
+              <div className="flex flex-wrap gap-2">
+                {selectedTopics.map((topicName) => (
+                  <div
+                    key={topicName}
+                    className="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 rounded-lg text-sm"
+                  >
+                    {topicName}
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Difficulty and Quantity */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-medium text-blue-600">Độ khó:</span>
+                <div className="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 rounded-lg text-sm">
+                  {selectedDifficulty}
+                </div>
+              </div>
+              <div className="flex flex-col gap-1">
+                <span className="text-sm font-medium text-blue-600">Số lượng câu hỏi:</span>
+                <div className="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 rounded-lg text-sm">
+                  {selectedQuantity} câu
+                </div>
+              </div>
             </div>
           </div>
-        )}
-      </div>
+        </div>
+      )}
     </div>
   );
 }; 

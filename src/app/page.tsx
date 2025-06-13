@@ -28,7 +28,7 @@ export default function Home() {
     audience: "",
     language: "",
     subtopics: [],
-    difficulty: "Trung cấp",
+    difficulty: "Cơ bản",
     quantity: 10,
     category: "",
     mainTopic: "",
@@ -163,12 +163,6 @@ export default function Home() {
     });
   };
 
-  const handleClearAllTopics = () => {
-    setFormData({
-      ...formData,
-      subtopics: []
-    });
-  };
 
   const handleDifficultyChange = (difficultyLabel: string) => {
     setFormData({ ...formData, difficulty: difficultyLabel });
@@ -287,7 +281,7 @@ export default function Home() {
           <StepIndicator currentStep={currentStep} totalSteps={4} />
 
           <motion.div 
-            className="bg-white shadow-lg rounded-xl p-8 mb-6 border border-blue-100"
+            className="bg-white shadow-lg rounded-xl p-6 md:p-8 mb-6 border border-blue-100"
             variants={itemVariants}
           >
             <AnimatePresence mode="wait">
@@ -348,7 +342,6 @@ export default function Home() {
                     formData={formData}
                     onTopicToggle={handleTopicToggle}
                     onRemoveTopic={handleRemoveTopic}
-                    onClearAllTopics={handleClearAllTopics}
                     onDifficultyChange={handleDifficultyChange}
                     onQuantityChange={handleQuantityChange}
                     onCategorySelect={handleCategorySelect}

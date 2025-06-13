@@ -63,7 +63,7 @@ export const AudienceSelector: React.FC<AudienceSelectorProps> = ({
               }`}
               onClick={() => onSelectAudience(audience)}
             >
-              <div className="flex items-center sm:flex-col sm:items-center space-x-4 sm:space-x-0 sm:space-y-4">
+              <div className="flex items-center sm:flex-col sm:items-center space-x-3 sm:space-x-0 sm:space-y-4">
                 <div className={`p-2 sm:p-3 rounded-full transition-colors duration-300 ${
                   selectedAudience === audience
                     ? "bg-blue-500 text-white"
