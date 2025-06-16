@@ -12,7 +12,7 @@ import { NavigationButtons } from "../components/NavigationButtons";
 import { AudienceSelector } from "../components/quiz/AudienceSelector";
 import { LanguageSelector } from "../components/quiz/LanguageSelector";
 import { QuizCustomizer } from "../components/quiz/QuizCustomizer";
-import { motion, AnimatePresence } from "framer-motion";
+import { motion, AnimatePresence, Variants } from "framer-motion";
 import { QuizTypeSelector } from "../components/quiz/QuizTypeSelector";
 
 enum AppStep {
@@ -189,8 +189,10 @@ export default function Home() {
     (currentStep === 4 && formData.subtopics.length > 0);
 
   // Animation variants
-  const containerVariants = {
-    hidden: { opacity: 0 },
+  const containerVariants: Variants = {
+    hidden: { 
+      opacity: 0 
+    },
     visible: { 
       opacity: 1,
       transition: { 
@@ -200,12 +202,17 @@ export default function Home() {
     },
     exit: {
       opacity: 0,
-      transition: { ease: "easeInOut" }
+      transition: { 
+        ease: "easeInOut" 
+      }
     }
   };
   
-  const itemVariants = {
-    hidden: { y: 20, opacity: 0 },
+  const itemVariants: Variants = {
+    hidden: { 
+      y: 20, 
+      opacity: 0 
+    },
     visible: {
       y: 0,
       opacity: 1,
