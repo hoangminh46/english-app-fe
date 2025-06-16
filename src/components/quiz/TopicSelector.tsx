@@ -5,7 +5,6 @@ import { quantityOptions } from '../../types/quiz';
 type TopicSelectorProps = {
   selectedTopics: string[];
   onTopicToggle: (topicName: string) => void;
-  onRemoveTopic: (topicName: string) => void;
   onCategorySelect: (categoryName: string) => void;
   onMainTopicSelect: (topicName: string) => void;
   selectedQuantity: number;
@@ -17,7 +16,6 @@ type TopicSelectorProps = {
 export const TopicSelector: React.FC<TopicSelectorProps> = ({
   selectedTopics,
   onTopicToggle,
-  onRemoveTopic,
   onCategorySelect,
   onMainTopicSelect,
   selectedQuantity,

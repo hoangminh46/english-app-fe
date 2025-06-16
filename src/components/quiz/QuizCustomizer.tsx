@@ -15,7 +15,6 @@ type QuizCustomizerProps = {
 export const QuizCustomizer: React.FC<QuizCustomizerProps> = ({
   formData,
   onTopicToggle,
-  onRemoveTopic,
   onDifficultyChange,
   onQuantityChange,
   onCategorySelect,
@@ -31,7 +30,6 @@ export const QuizCustomizer: React.FC<QuizCustomizerProps> = ({
       <TopicSelector
         selectedTopics={formData.subtopics}
         onTopicToggle={onTopicToggle}
-        onRemoveTopic={onRemoveTopic}
         onCategorySelect={onCategorySelect}
         onMainTopicSelect={onMainTopicSelect}
         selectedQuantity={formData.quantity}
