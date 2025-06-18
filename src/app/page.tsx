@@ -6,7 +6,6 @@ import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { FormData, QuizResponse } from "../types/quiz";
-import { StepIndicator } from "../components/StepIndicator";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { NavigationButtons } from "../components/NavigationButtons";
 import { AudienceSelector } from "../components/quiz/AudienceSelector";
@@ -14,6 +13,9 @@ import { LanguageSelector } from "../components/quiz/LanguageSelector";
 import { QuizCustomizer } from "../components/quiz/QuizCustomizer";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { QuizTypeSelector } from "../components/quiz/QuizTypeSelector";
+import { ModeSelector } from "../components/quiz/ModeSelector";
+import { PracticeSelector } from "../components/quiz/PracticeSelector";
+// import { StepIndicator } from "@/components/StepIndicator";
 
 enum AppStep {
   WELCOME = "welcome",
@@ -37,6 +39,9 @@ export default function Home() {
   });
   const [isNavigating, setIsNavigating] = useState(false);
   const [selectedQuizType, setSelectedQuizType] = useState<'quick' | 'custom' | null>(null);
+  const [selectedMode, setSelectedMode] = useState<'quiz' | 'practice' | null>(null);
+  const [selectedPracticeType, setSelectedPracticeType] = useState<'scramble' | null>(null);
+  // const totalSteps = 4; // Tổng số bước trong quy trình
 
   const generateQuizMutation = useMutation({
     mutationFn: async (data: FormData) => {
@@ -97,11 +102,20 @@ export default function Home() {
   };
 
   const handleNext = () => {
-    if (currentStep === 3 && selectedQuizType) {
-      // Nếu đang ở bước chọn loại quiz và đã chọn loại
-      if (selectedQuizType === 'quick') {
+    if (currentStep === 3) {
+      // At mode selection step
+      if (selectedMode === 'practice') {
+        setCurrentStep((prev) => prev + 1);
+      } else if (selectedMode === 'quiz') {
+        setCurrentStep((prev) => prev + 1);
+      }
+    } else if (currentStep === 4) {
+      // At quiz type or practice type selection step
+      if (selectedMode === 'quiz' && selectedQuizType === 'quick') {
         generateQuickQuizMutation.mutate();
-      } else {
+      } else if (selectedMode === 'quiz' && selectedQuizType === 'custom') {
+        setCurrentStep((prev) => prev + 1);
+      } else if (selectedMode === 'practice' && selectedPracticeType) {
         setCurrentStep((prev) => prev + 1);
       }
     } else {
@@ -111,10 +125,16 @@ export default function Home() {
 
   const handleBack = () => {
     if (currentStep === 1) {
-      // Quay lại màn hình chào mừng nếu đang ở bước 1
       setAppStep(AppStep.WELCOME);
     } else {
       setCurrentStep((prev) => prev - 1);
+      // Reset selections when going back
+      if (currentStep === 4) {
+        setSelectedQuizType(null);
+        setSelectedPracticeType(null);
+      } else if (currentStep === 3) {
+        setSelectedMode(null);
+      }
     }
   };
 
@@ -183,12 +203,27 @@ export default function Home() {
     setSelectedQuizType(type);
   };
 
-  // Cập nhật điều kiện để kích hoạt nút Next
+  const handleModeSelect = (mode: 'quiz' | 'practice') => {
+    setSelectedMode(mode);
+    // Reset subsequent selections when mode changes
+    setSelectedQuizType(null);
+    setSelectedPracticeType(null);
+  };
+
+  const handlePracticeTypeSelect = (type: 'scramble') => {
+    setSelectedPracticeType(type);
+  };
+
+  // Update canGoNext conditions
   const canGoNext = 
     (currentStep === 1 && formData.audience) ||
     (currentStep === 2 && formData.language) ||
-    (currentStep === 3 && selectedQuizType !== null) ||
-    (currentStep === 4 && formData.subtopics.length > 0);
+    (currentStep === 3 && selectedMode) ||
+    (currentStep === 4 && (
+      (selectedMode === 'quiz' && selectedQuizType) ||
+      (selectedMode === 'practice' && selectedPracticeType)
+    )) ||
+    (currentStep === 5 && formData.subtopics.length > 0);
 
   // Animation variants
   const containerVariants: Variants = {
@@ -287,7 +322,7 @@ export default function Home() {
         <LoadingOverlay isLoading={generateQuizMutation.isPending || generateQuickQuizMutation.isPending || isNavigating} />
 
         <div className="max-w-3xl mx-auto">
-          <StepIndicator currentStep={currentStep} totalSteps={4} />
+          {/* <StepIndicator currentStep={currentStep} totalSteps={totalSteps} /> */}
 
           <motion.div 
             className="bg-white shadow-lg rounded-xl p-6 md:p-8 mb-6 border border-blue-100"
@@ -326,6 +361,21 @@ export default function Home() {
 
               {currentStep === 3 && (
                 <motion.div
+                  key="mode"
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <ModeSelector 
+                    onSelectMode={handleModeSelect}
+                    selectedMode={selectedMode}
+                  />
+                </motion.div>
+              )}
+
+              {currentStep === 4 && selectedMode === 'quiz' && (
+                <motion.div
                   key="quiz-type"
                   initial={{ opacity: 0, x: 50 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -339,7 +389,22 @@ export default function Home() {
                 </motion.div>
               )}
 
-              {currentStep === 4 && (
+              {currentStep === 4 && selectedMode === 'practice' && (
+                <motion.div
+                  key="practice-type"
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <PracticeSelector 
+                    onSelectPracticeType={handlePracticeTypeSelect}
+                    selectedType={selectedPracticeType}
+                  />
+                </motion.div>
+              )}
+
+              {currentStep === 5 && (
                 <motion.div
                   key="customizer"
                   initial={{ opacity: 0, x: 50 }}
@@ -364,7 +429,7 @@ export default function Home() {
           <motion.div variants={itemVariants}>
             <NavigationButtons 
               currentStep={currentStep}
-              totalSteps={4}
+              totalSteps={5}
               canGoNext={canGoNext as boolean}
               isSubmitting={generateQuizMutation.isPending || generateQuickQuizMutation.isPending}
               onBack={handleBack}
