@@ -20,6 +20,8 @@ enum AppStep {
   SETUP = "setup"
 }
 
+const API_URL = process.env.NEXT_PUBLIC_API_URL;
+
 export default function Home() {
   const router = useRouter();
   const [appStep, setAppStep] = useState<AppStep>(AppStep.WELCOME);
@@ -39,7 +41,7 @@ export default function Home() {
   const generateQuizMutation = useMutation({
     mutationFn: async (data: FormData) => {
       const response = await axios.post<QuizResponse>(
-        "http://localhost:5000/api/generate-quiz",
+        `${API_URL}/api/generate-quiz`,
         data
       );
       return response.data;
@@ -55,7 +57,7 @@ export default function Home() {
   const generateQuickQuizMutation = useMutation({
     mutationFn: async () => {
       const response = await axios.post<QuizResponse>(
-        "http://localhost:5000/api/quick-quiz"
+        `${API_URL}/api/quick-quiz`
       );
       return response.data;
     },
