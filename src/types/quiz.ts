@@ -32,6 +32,18 @@ export type QuizResponse = {
   questions: Question[];
 };
 
+export interface ScrambleWord {
+  id: number;
+  word: string;
+  scrambled: string;
+  hint: string;
+  explanation: string;
+}
+
+export interface ScrambleResponse {
+  words: ScrambleWord[];
+}
+
 export const audiences = ["Học sinh", "Sinh viên", "Người đi làm", "Người cao tuổi"];
 export const languages = ["Tiếng Anh", "Tiếng Nhật", "Tiếng Trung"];
 export const difficulties = [

@@ -5,7 +5,7 @@ import axios from "axios";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { FormData, QuizResponse } from "../types/quiz";
+import { FormData, QuizResponse, ScrambleResponse } from "../types/quiz";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { NavigationButtons } from "../components/NavigationButtons";
 import { AudienceSelector } from "../components/quiz/AudienceSelector";
@@ -15,6 +15,7 @@ import { motion, AnimatePresence, Variants } from "framer-motion";
 import { QuizTypeSelector } from "../components/quiz/QuizTypeSelector";
 import { ModeSelector } from "../components/quiz/ModeSelector";
 import { PracticeSelector } from "../components/quiz/PracticeSelector";
+import { ScrambleCustomizer } from "../components/quiz/ScrambleCustomizer";
 // import { StepIndicator } from "@/components/StepIndicator";
 
 enum AppStep {
@@ -74,6 +75,22 @@ export default function Home() {
     }
   });
 
+  const generateScrambleMutation = useMutation({
+    mutationFn: async (data: { topics: string[], difficulty: string, quantity: number }) => {
+      const response = await axios.post<ScrambleResponse>(
+        `${API_URL}/api/scramble`,
+        data
+      );
+      return response.data;
+    },
+    onSuccess: (data) => {
+      handleScrambleSuccess(data);
+    },
+    onError: (error) => {
+      handleScrambleError(error);
+    }
+  });
+
   const handleQuizSuccess = (data: QuizResponse) => {
     // Xóa dữ liệu câu hỏi cũ và tiến trình làm bài trước khi lưu dữ liệu mới
     localStorage.removeItem('quizProgress');
@@ -89,12 +106,30 @@ export default function Home() {
     router.push('/quiz');
   };
 
+  const handleScrambleSuccess = (data: ScrambleResponse) => {
+    // Lưu dữ liệu game vào localStorage
+    localStorage.setItem('scrambleData', JSON.stringify(data));
+    
+    // Đánh dấu đang trong quá trình chuyển trang
+    setIsNavigating(true);
+    
+    // Điều hướng đến trang scramble
+    router.push('/scramble');
+  };
+
   const handleQuizError = (error: unknown) => {
     // Hiển thị thông báo lỗi
     toast.error("Tạo câu hỏi thất bại, vui lòng thử lại sau!", {
       duration: 3000
     });
     console.error("Error generating quiz:", error);
+  };
+
+  const handleScrambleError = (error: unknown) => {
+    toast.error("Tạo trò chơi thất bại, vui lòng thử lại sau!", {
+      duration: 3000
+    });
+    console.error("Error generating scramble game:", error);
   };
 
   const handleStartApp = () => {
@@ -115,7 +150,7 @@ export default function Home() {
         generateQuickQuizMutation.mutate();
       } else if (selectedMode === 'quiz' && selectedQuizType === 'custom') {
         setCurrentStep((prev) => prev + 1);
-      } else if (selectedMode === 'practice' && selectedPracticeType) {
+      } else if (selectedMode === 'practice' && selectedPracticeType === 'scramble') {
         setCurrentStep((prev) => prev + 1);
       }
     } else {
@@ -167,8 +202,15 @@ export default function Home() {
         subtopics: formData.subtopics.filter(name => name !== topicName),
       });
     } else {
-      // If not selected and haven't reached the limit, add it
-      if (formData.subtopics.length < 3) {
+      // If selecting "Chủ đề ngẫu nhiên", clear all other selections
+      if (topicName === 'Chủ đề ngẫu nhiên') {
+        setFormData({
+          ...formData,
+          subtopics: [topicName],
+        });
+      } 
+      // If not "Chủ đề ngẫu nhiên" and haven't reached the limit
+      else if (formData.subtopics.length < 3 && !formData.subtopics.includes('Chủ đề ngẫu nhiên')) {
         setFormData({
           ...formData,
           subtopics: [...formData.subtopics, topicName],
@@ -195,8 +237,17 @@ export default function Home() {
   };
 
   const handleSubmit = () => {
-    // Gọi API thông qua mutation
-    generateQuizMutation.mutate(formData);
+    if (selectedMode === 'practice' && selectedPracticeType === 'scramble') {
+      // Gọi API tạo game scramble
+      generateScrambleMutation.mutate({
+        topics: formData.subtopics,
+        difficulty: formData.difficulty,
+        quantity: formData.quantity
+      });
+    } else {
+      // Gọi API tạo quiz
+      generateQuizMutation.mutate(formData);
+    }
   };
 
   const handleQuizTypeSelect = (type: 'quick' | 'custom') => {
@@ -208,10 +259,30 @@ export default function Home() {
     // Reset subsequent selections when mode changes
     setSelectedQuizType(null);
     setSelectedPracticeType(null);
+    // Reset formData when changing mode
+    setFormData({
+      audience: formData.audience,
+      language: formData.language,
+      subtopics: [],
+      difficulty: "Cơ bản",
+      quantity: 10,
+      category: "",
+      mainTopic: "",
+    });
   };
 
   const handlePracticeTypeSelect = (type: 'scramble') => {
     setSelectedPracticeType(type);
+    // Reset formData when selecting practice type
+    setFormData({
+      audience: formData.audience,
+      language: formData.language,
+      subtopics: [],
+      difficulty: "Cơ bản",
+      quantity: 10,
+      category: "",
+      mainTopic: "",
+    });
   };
 
   // Update canGoNext conditions
@@ -223,7 +294,10 @@ export default function Home() {
       (selectedMode === 'quiz' && selectedQuizType) ||
       (selectedMode === 'practice' && selectedPracticeType)
     )) ||
-    (currentStep === 5 && formData.subtopics.length > 0);
+    (currentStep === 5 && (
+      (selectedMode === 'quiz' && formData.subtopics.length > 0) ||
+      (selectedMode === 'practice' && selectedPracticeType === 'scramble' && formData.subtopics.length > 0)
+    ));
 
   // Animation variants
   const containerVariants: Variants = {
@@ -319,7 +393,7 @@ export default function Home() {
         variants={containerVariants}
       >
         {/* Loading Overlay */}
-        <LoadingOverlay isLoading={generateQuizMutation.isPending || generateQuickQuizMutation.isPending || isNavigating} />
+        <LoadingOverlay isLoading={generateQuizMutation.isPending || generateQuickQuizMutation.isPending || generateScrambleMutation.isPending || isNavigating} />
 
         <div className="max-w-3xl mx-auto">
           {/* <StepIndicator currentStep={currentStep} totalSteps={totalSteps} /> */}
@@ -404,9 +478,9 @@ export default function Home() {
                 </motion.div>
               )}
 
-              {currentStep === 5 && (
+              {currentStep === 5 && selectedMode === 'quiz' && (
                 <motion.div
-                  key="customizer"
+                  key="quiz-customizer"
                   initial={{ opacity: 0, x: 50 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -50 }}
@@ -423,6 +497,23 @@ export default function Home() {
                   />
                 </motion.div>
               )}
+
+              {currentStep === 5 && selectedMode === 'practice' && selectedPracticeType === 'scramble' && (
+                <motion.div
+                  key="scramble-customizer"
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <ScrambleCustomizer 
+                    formData={formData}
+                    onTopicToggle={handleTopicToggle}
+                    onDifficultyChange={handleDifficultyChange}
+                    onQuantityChange={handleQuantityChange}
+                  />
+                </motion.div>
+              )}
             </AnimatePresence>
           </motion.div>
 
@@ -431,10 +522,11 @@ export default function Home() {
               currentStep={currentStep}
               totalSteps={5}
               canGoNext={canGoNext as boolean}
-              isSubmitting={generateQuizMutation.isPending || generateQuickQuizMutation.isPending}
+              isSubmitting={generateQuizMutation.isPending || generateQuickQuizMutation.isPending || generateScrambleMutation.isPending}
               onBack={handleBack}
               onNext={handleNext}
               onSubmit={handleSubmit}
+              mode={selectedMode || 'quiz'}
             />
           </motion.div>
         </div>
