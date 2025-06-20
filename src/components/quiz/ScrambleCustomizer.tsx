@@ -6,6 +6,7 @@ interface ScrambleCustomizerProps {
   onDifficultyChange: (difficulty: string) => void;
   onQuantityChange: (quantity: number) => void;
   onTopicToggle: (topic: string) => void;
+  onTimerChange: (seconds: number) => void;
 }
 
 export const ScrambleCustomizer: React.FC<ScrambleCustomizerProps> = ({
@@ -13,6 +14,7 @@ export const ScrambleCustomizer: React.FC<ScrambleCustomizerProps> = ({
   onDifficultyChange,
   onQuantityChange,
   onTopicToggle,
+  onTimerChange,
 }) => {
   const topics = [
     'Chủ đề ngẫu nhiên',
@@ -113,6 +115,26 @@ export const ScrambleCustomizer: React.FC<ScrambleCustomizerProps> = ({
                 }`}
             >
               {quantity}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Timer Selection */}
+      <div className="space-y-4">
+        <h3 className="text-lg font-semibold text-gray-800">Thời gian trả lời (giây)</h3>
+        <div className="grid grid-cols-4 gap-3">
+          {[20, 25, 30, 45].map((seconds) => (
+            <button
+              key={seconds}
+              onClick={() => onTimerChange(seconds)}
+              className={`p-3 rounded-lg text-sm font-medium transition-colors
+                ${formData.timer === seconds
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
+            >
+              {seconds}
             </button>
           ))}
         </div>

@@ -18,6 +18,7 @@ export type FormData = {
   quantity: number;
   category: string;
   mainTopic: string;
+  timer?: number;
 };
 
 export type Question = {

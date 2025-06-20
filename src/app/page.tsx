@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -37,12 +37,39 @@ export default function Home() {
     quantity: 10,
     category: "",
     mainTopic: "",
+    timer: 20,
   });
+
+  const [scrambleFormData, setScrambleFormData] = useState<FormData>({
+    audience: "",
+    language: "",
+    subtopics: [],
+    difficulty: "Cơ bản",
+    quantity: 5,
+    category: "",
+    mainTopic: "",
+    timer: 20,
+  });
+
   const [isNavigating, setIsNavigating] = useState(false);
   const [selectedQuizType, setSelectedQuizType] = useState<'quick' | 'custom' | null>(null);
   const [selectedMode, setSelectedMode] = useState<'quiz' | 'practice' | null>(null);
   const [selectedPracticeType, setSelectedPracticeType] = useState<'scramble' | null>(null);
   // const totalSteps = 4; // Tổng số bước trong quy trình
+
+  // Load saved game state
+  useEffect(() => {
+    const savedState = localStorage.getItem('gameState');
+    if (savedState) {
+      const state = JSON.parse(savedState);
+      setAppStep(AppStep.SETUP);
+      setCurrentStep(state.currentStep);
+      setSelectedMode(state.selectedMode);
+      setSelectedPracticeType(state.selectedPracticeType);
+      // Clear the saved state after loading
+      localStorage.removeItem('gameState');
+    }
+  }, []);
 
   const generateQuizMutation = useMutation({
     mutationFn: async (data: FormData) => {
@@ -192,28 +219,31 @@ export default function Home() {
 
   // Handle topic selection/deselection
   const handleTopicToggle = (topicName: string) => {
+    const currentData = selectedMode === 'practice' ? scrambleFormData : formData;
+    const setData = selectedMode === 'practice' ? setScrambleFormData : setFormData;
+    
     // Check if the topic is already selected
-    const isSelected = formData.subtopics.includes(topicName);
+    const isSelected = currentData.subtopics.includes(topicName);
     
     if (isSelected) {
       // If already selected, deselect it
-      setFormData({
-        ...formData,
-        subtopics: formData.subtopics.filter(name => name !== topicName),
+      setData({
+        ...currentData,
+        subtopics: currentData.subtopics.filter(name => name !== topicName),
       });
     } else {
       // If selecting "Chủ đề ngẫu nhiên", clear all other selections
       if (topicName === 'Chủ đề ngẫu nhiên') {
-        setFormData({
-          ...formData,
+        setData({
+          ...currentData,
           subtopics: [topicName],
         });
       } 
       // If not "Chủ đề ngẫu nhiên" and haven't reached the limit
-      else if (formData.subtopics.length < 3 && !formData.subtopics.includes('Chủ đề ngẫu nhiên')) {
-        setFormData({
-          ...formData,
-          subtopics: [...formData.subtopics, topicName],
+      else if (currentData.subtopics.length < 3 && !currentData.subtopics.includes('Chủ đề ngẫu nhiên')) {
+        setData({
+          ...currentData,
+          subtopics: [...currentData.subtopics, topicName],
         });
       }
     }
@@ -229,20 +259,34 @@ export default function Home() {
 
 
   const handleDifficultyChange = (difficultyLabel: string) => {
-    setFormData({ ...formData, difficulty: difficultyLabel });
+    if (selectedMode === 'practice') {
+      setScrambleFormData({ ...scrambleFormData, difficulty: difficultyLabel });
+    } else {
+      setFormData({ ...formData, difficulty: difficultyLabel });
+    }
   };
 
   const handleQuantityChange = (quantity: number) => {
-    setFormData({ ...formData, quantity });
+    if (selectedMode === 'practice') {
+      setScrambleFormData({ ...scrambleFormData, quantity });
+    } else {
+      setFormData({ ...formData, quantity });
+    }
+  };
+
+  const handleTimerChange = (timer: number) => {
+    setScrambleFormData({ ...scrambleFormData, timer });
   };
 
   const handleSubmit = () => {
     if (selectedMode === 'practice' && selectedPracticeType === 'scramble') {
+      // Save formData to localStorage for timer value
+      localStorage.setItem('formData', JSON.stringify(scrambleFormData));
       // Gọi API tạo game scramble
       generateScrambleMutation.mutate({
-        topics: formData.subtopics,
-        difficulty: formData.difficulty,
-        quantity: formData.quantity
+        topics: scrambleFormData.subtopics,
+        difficulty: scrambleFormData.difficulty,
+        quantity: scrambleFormData.quantity
       });
     } else {
       // Gọi API tạo quiz
@@ -260,28 +304,43 @@ export default function Home() {
     setSelectedQuizType(null);
     setSelectedPracticeType(null);
     // Reset formData when changing mode
-    setFormData({
-      audience: formData.audience,
-      language: formData.language,
-      subtopics: [],
-      difficulty: "Cơ bản",
-      quantity: 10,
-      category: "",
-      mainTopic: "",
-    });
+    if (mode === 'quiz') {
+      setFormData({
+        audience: formData.audience,
+        language: formData.language,
+        subtopics: [],
+        difficulty: "Cơ bản",
+        quantity: 10,
+        category: "",
+        mainTopic: "",
+        timer: 20,
+      });
+    } else {
+      setScrambleFormData({
+        audience: formData.audience,
+        language: formData.language,
+        subtopics: [],
+        difficulty: "Cơ bản",
+        quantity: 5,
+        category: "",
+        mainTopic: "",
+        timer: 20,
+      });
+    }
   };
 
   const handlePracticeTypeSelect = (type: 'scramble') => {
     setSelectedPracticeType(type);
-    // Reset formData when selecting practice type
-    setFormData({
+    // Reset scrambleFormData when selecting practice type
+    setScrambleFormData({
       audience: formData.audience,
       language: formData.language,
       subtopics: [],
       difficulty: "Cơ bản",
-      quantity: 10,
+      quantity: 5,
       category: "",
       mainTopic: "",
+      timer: 20,
     });
   };
 
@@ -296,7 +355,7 @@ export default function Home() {
     )) ||
     (currentStep === 5 && (
       (selectedMode === 'quiz' && formData.subtopics.length > 0) ||
-      (selectedMode === 'practice' && selectedPracticeType === 'scramble' && formData.subtopics.length > 0)
+      (selectedMode === 'practice' && selectedPracticeType === 'scramble' && scrambleFormData.subtopics.length > 0)
     ));
 
   // Animation variants
@@ -507,10 +566,11 @@ export default function Home() {
                   transition={{ duration: 0.3 }}
                 >
                   <ScrambleCustomizer 
-                    formData={formData}
+                    formData={scrambleFormData}
                     onTopicToggle={handleTopicToggle}
                     onDifficultyChange={handleDifficultyChange}
                     onQuantityChange={handleQuantityChange}
+                    onTimerChange={handleTimerChange}
                   />
                 </motion.div>
               )}
