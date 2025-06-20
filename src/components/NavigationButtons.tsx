@@ -1,24 +1,34 @@
 import React from 'react';
 
-type NavigationButtonsProps = {
+interface NavigationButtonsProps {
   currentStep: number;
   totalSteps: number;
   canGoNext: boolean;
-  isSubmitting?: boolean;
+  isSubmitting: boolean;
   onBack: () => void;
   onNext: () => void;
   onSubmit: () => void;
-};
+  mode?: 'quiz' | 'practice';
+}
 
 export const NavigationButtons: React.FC<NavigationButtonsProps> = ({
   currentStep,
   totalSteps,
   canGoNext,
-  isSubmitting = false,
+  isSubmitting,
   onBack,
   onNext,
-  onSubmit
+  onSubmit,
+  mode
 }) => {
+  const isLastStep = currentStep === totalSteps;
+
+  const getSubmitButtonText = () => {
+    if (isSubmitting) return 'Đang tạo...';
+    if (mode === 'practice') return 'Tạo trò chơi';
+    return 'Tạo bộ câu hỏi';
+  };
+
   return (
     <div className="flex justify-between">
       <button
@@ -33,8 +43,21 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({
       >
         Quay lại
       </button>
-
-      {currentStep < totalSteps ? (
+      
+      {isLastStep ? (
+        <button
+          type="button"
+          onClick={onSubmit}
+          disabled={!canGoNext || isSubmitting}
+          className={`px-6 py-2 rounded-lg shadow-sm transition-all ${
+            !canGoNext || isSubmitting
+              ? "bg-blue-300 text-white cursor-not-allowed"
+              : "bg-gradient-to-r from-blue-400 to-blue-600 text-white hover:from-blue-500 hover:to-blue-700 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+          }`}
+        >
+          {getSubmitButtonText()}
+        </button>
+      ) : (
         <button
           type="button"
           onClick={onNext}
@@ -46,19 +69,6 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({
           }`}
         >
           Tiếp theo
-        </button>
-      ) : (
-        <button
-          type="button"
-          onClick={onSubmit}
-          disabled={!canGoNext || isSubmitting}
-          className={`px-6 py-2 rounded-lg shadow-sm transition-all ${
-            !canGoNext || isSubmitting
-              ? "bg-blue-300 text-white cursor-not-allowed"
-              : "bg-gradient-to-r from-blue-400 to-blue-600 text-white hover:from-blue-500 hover:to-blue-700 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-          }`}
-        >
-          {isSubmitting ? "Đang tạo..." : "Tạo bộ câu hỏi"}
         </button>
       )}
     </div>

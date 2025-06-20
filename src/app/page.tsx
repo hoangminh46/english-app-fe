@@ -1,12 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { FormData, QuizResponse } from "../types/quiz";
-import { StepIndicator } from "../components/StepIndicator";
+import { FormData, QuizResponse, ScrambleResponse } from "../types/quiz";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { NavigationButtons } from "../components/NavigationButtons";
 import { AudienceSelector } from "../components/quiz/AudienceSelector";
@@ -14,6 +13,10 @@ import { LanguageSelector } from "../components/quiz/LanguageSelector";
 import { QuizCustomizer } from "../components/quiz/QuizCustomizer";
 import { motion, AnimatePresence, Variants } from "framer-motion";
 import { QuizTypeSelector } from "../components/quiz/QuizTypeSelector";
+import { ModeSelector } from "../components/quiz/ModeSelector";
+import { PracticeSelector } from "../components/quiz/PracticeSelector";
+import { ScrambleCustomizer } from "../components/quiz/ScrambleCustomizer";
+// import { StepIndicator } from "@/components/StepIndicator";
 
 enum AppStep {
   WELCOME = "welcome",
@@ -34,9 +37,39 @@ export default function Home() {
     quantity: 10,
     category: "",
     mainTopic: "",
+    timer: 20,
   });
+
+  const [scrambleFormData, setScrambleFormData] = useState<FormData>({
+    audience: "",
+    language: "",
+    subtopics: [],
+    difficulty: "Cơ bản",
+    quantity: 5,
+    category: "",
+    mainTopic: "",
+    timer: 20,
+  });
+
   const [isNavigating, setIsNavigating] = useState(false);
   const [selectedQuizType, setSelectedQuizType] = useState<'quick' | 'custom' | null>(null);
+  const [selectedMode, setSelectedMode] = useState<'quiz' | 'practice' | null>(null);
+  const [selectedPracticeType, setSelectedPracticeType] = useState<'scramble' | null>(null);
+  // const totalSteps = 4; // Tổng số bước trong quy trình
+
+  // Load saved game state
+  useEffect(() => {
+    const savedState = localStorage.getItem('gameState');
+    if (savedState) {
+      const state = JSON.parse(savedState);
+      setAppStep(AppStep.SETUP);
+      setCurrentStep(state.currentStep);
+      setSelectedMode(state.selectedMode);
+      setSelectedPracticeType(state.selectedPracticeType);
+      // Clear the saved state after loading
+      localStorage.removeItem('gameState');
+    }
+  }, []);
 
   const generateQuizMutation = useMutation({
     mutationFn: async (data: FormData) => {
@@ -69,6 +102,22 @@ export default function Home() {
     }
   });
 
+  const generateScrambleMutation = useMutation({
+    mutationFn: async (data: { topics: string[], difficulty: string, quantity: number }) => {
+      const response = await axios.post<ScrambleResponse>(
+        `${API_URL}/api/scramble`,
+        data
+      );
+      return response.data;
+    },
+    onSuccess: (data) => {
+      handleScrambleSuccess(data);
+    },
+    onError: (error) => {
+      handleScrambleError(error);
+    }
+  });
+
   const handleQuizSuccess = (data: QuizResponse) => {
     // Xóa dữ liệu câu hỏi cũ và tiến trình làm bài trước khi lưu dữ liệu mới
     localStorage.removeItem('quizProgress');
@@ -84,6 +133,17 @@ export default function Home() {
     router.push('/quiz');
   };
 
+  const handleScrambleSuccess = (data: ScrambleResponse) => {
+    // Lưu dữ liệu game vào localStorage
+    localStorage.setItem('scrambleData', JSON.stringify(data));
+    
+    // Đánh dấu đang trong quá trình chuyển trang
+    setIsNavigating(true);
+    
+    // Điều hướng đến trang scramble
+    router.push('/scramble');
+  };
+
   const handleQuizError = (error: unknown) => {
     // Hiển thị thông báo lỗi
     toast.error("Tạo câu hỏi thất bại, vui lòng thử lại sau!", {
@@ -92,16 +152,32 @@ export default function Home() {
     console.error("Error generating quiz:", error);
   };
 
+  const handleScrambleError = (error: unknown) => {
+    toast.error("Tạo trò chơi thất bại, vui lòng thử lại sau!", {
+      duration: 3000
+    });
+    console.error("Error generating scramble game:", error);
+  };
+
   const handleStartApp = () => {
     setAppStep(AppStep.SETUP);
   };
 
   const handleNext = () => {
-    if (currentStep === 3 && selectedQuizType) {
-      // Nếu đang ở bước chọn loại quiz và đã chọn loại
-      if (selectedQuizType === 'quick') {
+    if (currentStep === 3) {
+      // At mode selection step
+      if (selectedMode === 'practice') {
+        setCurrentStep((prev) => prev + 1);
+      } else if (selectedMode === 'quiz') {
+        setCurrentStep((prev) => prev + 1);
+      }
+    } else if (currentStep === 4) {
+      // At quiz type or practice type selection step
+      if (selectedMode === 'quiz' && selectedQuizType === 'quick') {
         generateQuickQuizMutation.mutate();
-      } else {
+      } else if (selectedMode === 'quiz' && selectedQuizType === 'custom') {
+        setCurrentStep((prev) => prev + 1);
+      } else if (selectedMode === 'practice' && selectedPracticeType === 'scramble') {
         setCurrentStep((prev) => prev + 1);
       }
     } else {
@@ -111,10 +187,16 @@ export default function Home() {
 
   const handleBack = () => {
     if (currentStep === 1) {
-      // Quay lại màn hình chào mừng nếu đang ở bước 1
       setAppStep(AppStep.WELCOME);
     } else {
       setCurrentStep((prev) => prev - 1);
+      // Reset selections when going back
+      if (currentStep === 4) {
+        setSelectedQuizType(null);
+        setSelectedPracticeType(null);
+      } else if (currentStep === 3) {
+        setSelectedMode(null);
+      }
     }
   };
 
@@ -137,21 +219,31 @@ export default function Home() {
 
   // Handle topic selection/deselection
   const handleTopicToggle = (topicName: string) => {
+    const currentData = selectedMode === 'practice' ? scrambleFormData : formData;
+    const setData = selectedMode === 'practice' ? setScrambleFormData : setFormData;
+    
     // Check if the topic is already selected
-    const isSelected = formData.subtopics.includes(topicName);
+    const isSelected = currentData.subtopics.includes(topicName);
     
     if (isSelected) {
       // If already selected, deselect it
-      setFormData({
-        ...formData,
-        subtopics: formData.subtopics.filter(name => name !== topicName),
+      setData({
+        ...currentData,
+        subtopics: currentData.subtopics.filter(name => name !== topicName),
       });
     } else {
-      // If not selected and haven't reached the limit, add it
-      if (formData.subtopics.length < 3) {
-        setFormData({
-          ...formData,
-          subtopics: [...formData.subtopics, topicName],
+      // If selecting "Chủ đề ngẫu nhiên", clear all other selections
+      if (topicName === 'Chủ đề ngẫu nhiên') {
+        setData({
+          ...currentData,
+          subtopics: [topicName],
+        });
+      } 
+      // If not "Chủ đề ngẫu nhiên" and haven't reached the limit
+      else if (currentData.subtopics.length < 3 && !currentData.subtopics.includes('Chủ đề ngẫu nhiên')) {
+        setData({
+          ...currentData,
+          subtopics: [...currentData.subtopics, topicName],
         });
       }
     }
@@ -167,28 +259,104 @@ export default function Home() {
 
 
   const handleDifficultyChange = (difficultyLabel: string) => {
-    setFormData({ ...formData, difficulty: difficultyLabel });
+    if (selectedMode === 'practice') {
+      setScrambleFormData({ ...scrambleFormData, difficulty: difficultyLabel });
+    } else {
+      setFormData({ ...formData, difficulty: difficultyLabel });
+    }
   };
 
   const handleQuantityChange = (quantity: number) => {
-    setFormData({ ...formData, quantity });
+    if (selectedMode === 'practice') {
+      setScrambleFormData({ ...scrambleFormData, quantity });
+    } else {
+      setFormData({ ...formData, quantity });
+    }
+  };
+
+  const handleTimerChange = (timer: number) => {
+    setScrambleFormData({ ...scrambleFormData, timer });
   };
 
   const handleSubmit = () => {
-    // Gọi API thông qua mutation
-    generateQuizMutation.mutate(formData);
+    if (selectedMode === 'practice' && selectedPracticeType === 'scramble') {
+      // Save formData to localStorage for timer value
+      localStorage.setItem('formData', JSON.stringify(scrambleFormData));
+      // Gọi API tạo game scramble
+      generateScrambleMutation.mutate({
+        topics: scrambleFormData.subtopics,
+        difficulty: scrambleFormData.difficulty,
+        quantity: scrambleFormData.quantity
+      });
+    } else {
+      // Gọi API tạo quiz
+      generateQuizMutation.mutate(formData);
+    }
   };
 
   const handleQuizTypeSelect = (type: 'quick' | 'custom') => {
     setSelectedQuizType(type);
   };
 
-  // Cập nhật điều kiện để kích hoạt nút Next
+  const handleModeSelect = (mode: 'quiz' | 'practice') => {
+    setSelectedMode(mode);
+    // Reset subsequent selections when mode changes
+    setSelectedQuizType(null);
+    setSelectedPracticeType(null);
+    // Reset formData when changing mode
+    if (mode === 'quiz') {
+      setFormData({
+        audience: formData.audience,
+        language: formData.language,
+        subtopics: [],
+        difficulty: "Cơ bản",
+        quantity: 10,
+        category: "",
+        mainTopic: "",
+        timer: 20,
+      });
+    } else {
+      setScrambleFormData({
+        audience: formData.audience,
+        language: formData.language,
+        subtopics: [],
+        difficulty: "Cơ bản",
+        quantity: 5,
+        category: "",
+        mainTopic: "",
+        timer: 20,
+      });
+    }
+  };
+
+  const handlePracticeTypeSelect = (type: 'scramble') => {
+    setSelectedPracticeType(type);
+    // Reset scrambleFormData when selecting practice type
+    setScrambleFormData({
+      audience: formData.audience,
+      language: formData.language,
+      subtopics: [],
+      difficulty: "Cơ bản",
+      quantity: 5,
+      category: "",
+      mainTopic: "",
+      timer: 20,
+    });
+  };
+
+  // Update canGoNext conditions
   const canGoNext = 
     (currentStep === 1 && formData.audience) ||
     (currentStep === 2 && formData.language) ||
-    (currentStep === 3 && selectedQuizType !== null) ||
-    (currentStep === 4 && formData.subtopics.length > 0);
+    (currentStep === 3 && selectedMode) ||
+    (currentStep === 4 && (
+      (selectedMode === 'quiz' && selectedQuizType) ||
+      (selectedMode === 'practice' && selectedPracticeType)
+    )) ||
+    (currentStep === 5 && (
+      (selectedMode === 'quiz' && formData.subtopics.length > 0) ||
+      (selectedMode === 'practice' && selectedPracticeType === 'scramble' && scrambleFormData.subtopics.length > 0)
+    ));
 
   // Animation variants
   const containerVariants: Variants = {
@@ -284,10 +452,10 @@ export default function Home() {
         variants={containerVariants}
       >
         {/* Loading Overlay */}
-        <LoadingOverlay isLoading={generateQuizMutation.isPending || generateQuickQuizMutation.isPending || isNavigating} />
+        <LoadingOverlay isLoading={generateQuizMutation.isPending || generateQuickQuizMutation.isPending || generateScrambleMutation.isPending || isNavigating} />
 
         <div className="max-w-3xl mx-auto">
-          <StepIndicator currentStep={currentStep} totalSteps={4} />
+          {/* <StepIndicator currentStep={currentStep} totalSteps={totalSteps} /> */}
 
           <motion.div 
             className="bg-white shadow-lg rounded-xl p-6 md:p-8 mb-6 border border-blue-100"
@@ -326,6 +494,21 @@ export default function Home() {
 
               {currentStep === 3 && (
                 <motion.div
+                  key="mode"
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <ModeSelector 
+                    onSelectMode={handleModeSelect}
+                    selectedMode={selectedMode}
+                  />
+                </motion.div>
+              )}
+
+              {currentStep === 4 && selectedMode === 'quiz' && (
+                <motion.div
                   key="quiz-type"
                   initial={{ opacity: 0, x: 50 }}
                   animate={{ opacity: 1, x: 0 }}
@@ -339,9 +522,24 @@ export default function Home() {
                 </motion.div>
               )}
 
-              {currentStep === 4 && (
+              {currentStep === 4 && selectedMode === 'practice' && (
                 <motion.div
-                  key="customizer"
+                  key="practice-type"
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <PracticeSelector 
+                    onSelectPracticeType={handlePracticeTypeSelect}
+                    selectedType={selectedPracticeType}
+                  />
+                </motion.div>
+              )}
+
+              {currentStep === 5 && selectedMode === 'quiz' && (
+                <motion.div
+                  key="quiz-customizer"
                   initial={{ opacity: 0, x: 50 }}
                   animate={{ opacity: 1, x: 0 }}
                   exit={{ opacity: 0, x: -50 }}
@@ -358,18 +556,37 @@ export default function Home() {
                   />
                 </motion.div>
               )}
+
+              {currentStep === 5 && selectedMode === 'practice' && selectedPracticeType === 'scramble' && (
+                <motion.div
+                  key="scramble-customizer"
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <ScrambleCustomizer 
+                    formData={scrambleFormData}
+                    onTopicToggle={handleTopicToggle}
+                    onDifficultyChange={handleDifficultyChange}
+                    onQuantityChange={handleQuantityChange}
+                    onTimerChange={handleTimerChange}
+                  />
+                </motion.div>
+              )}
             </AnimatePresence>
           </motion.div>
 
           <motion.div variants={itemVariants}>
             <NavigationButtons 
               currentStep={currentStep}
-              totalSteps={4}
+              totalSteps={5}
               canGoNext={canGoNext as boolean}
-              isSubmitting={generateQuizMutation.isPending || generateQuickQuizMutation.isPending}
+              isSubmitting={generateQuizMutation.isPending || generateQuickQuizMutation.isPending || generateScrambleMutation.isPending}
               onBack={handleBack}
               onNext={handleNext}
               onSubmit={handleSubmit}
+              mode={selectedMode || 'quiz'}
             />
           </motion.div>
         </div>
