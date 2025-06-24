@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from 'react';
-import { ScrambleWord, ScrambleResponse, FormData } from '@/types/quiz';
+import { ScrambleWord, ScrambleResponse, FormData, ScrambleProgress } from '@/types/quiz';
 import { GameComplete } from '@/components/scramble/GameComplete';
+import { useRouter } from 'next/navigation';
 
 export default function ScramblePage() {
+  const router = useRouter();
   const [words, setWords] = useState<ScrambleWord[]>([]);
   const [currentWordIndex, setCurrentWordIndex] = useState(0);
   const [score, setScore] = useState(0);
@@ -24,9 +26,46 @@ export default function ScramblePage() {
       const gameData: ScrambleResponse = JSON.parse(savedData);
       const { timer = 20 } = JSON.parse(formData) as FormData;
       setWords(gameData.words);
-      setTimeLeft(timer);
+      
+      // Khôi phục tiến độ nếu có
+      const savedProgress = localStorage.getItem('scrambleProgress');
+      if (savedProgress) {
+        const progress: ScrambleProgress = JSON.parse(savedProgress);
+        setCurrentWordIndex(progress.currentWordIndex);
+        setScore(progress.score);
+        setSelectedLetters(progress.selectedLetters);
+        setAvailableLetters(progress.availableLetters);
+        setShowHint(progress.showHint);
+        setIsCorrect(progress.isCorrect);
+        setTimeLeft(progress.timeLeft);
+        setShowAnswer(progress.showAnswer);
+        setIsGameComplete(progress.isGameComplete);
+      } else {
+        setTimeLeft(timer);
+      }
+    } else {
+      router.push('/');
     }
   }, []);
+
+  // Lưu tiến độ mỗi khi có thay đổi
+  useEffect(() => {
+    if (!words.length) return;
+    
+    const progress: ScrambleProgress = {
+      currentWordIndex,
+      score,
+      selectedLetters,
+      availableLetters,
+      showHint,
+      isCorrect,
+      timeLeft,
+      showAnswer,
+      isGameComplete
+    };
+    
+    localStorage.setItem('scrambleProgress', JSON.stringify(progress));
+  }, [currentWordIndex, score, selectedLetters, availableLetters, showHint, isCorrect, timeLeft, showAnswer, isGameComplete, words]);
 
   useEffect(() => {
     // Reset game state when word changes
@@ -106,6 +145,8 @@ export default function ScramblePage() {
       setCurrentWordIndex(prev => prev + 1);
     } else {
       setIsGameComplete(true);
+      // Xóa tiến độ khi hoàn thành game
+      localStorage.removeItem('scrambleProgress');
     }
   };
 
