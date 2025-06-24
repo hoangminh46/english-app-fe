@@ -45,6 +45,18 @@ export interface ScrambleResponse {
   words: ScrambleWord[];
 }
 
+export type ScrambleProgress = {
+  currentWordIndex: number;
+  score: number;
+  selectedLetters: string[];
+  availableLetters: string[];
+  showHint: boolean;
+  isCorrect: boolean;
+  timeLeft: number;
+  showAnswer: boolean;
+  isGameComplete: boolean;
+};
+
 export const audiences = ["Học sinh", "Sinh viên", "Người đi làm", "Người cao tuổi"];
 export const languages = ["Tiếng Anh", "Tiếng Nhật", "Tiếng Trung"];
 export const difficulties = [

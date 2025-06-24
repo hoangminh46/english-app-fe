@@ -57,17 +57,32 @@ export default function Home() {
   const [selectedPracticeType, setSelectedPracticeType] = useState<'scramble' | null>(null);
   // const totalSteps = 4; // Tổng số bước trong quy trình
 
-  // Load saved game state
   useEffect(() => {
-    const savedState = localStorage.getItem('gameState');
-    if (savedState) {
-      const state = JSON.parse(savedState);
+    const progessState = localStorage.getItem('progessState');
+    const quizData = localStorage.getItem('quizData');
+    const scrambleData = localStorage.getItem('scrambleData');
+    const quizProgress = localStorage.getItem('quizProgress');
+    const scrambleProgress = localStorage.getItem('scrambleProgress');
+    if (progessState) {
+      const state = JSON.parse(progessState);
       setAppStep(AppStep.SETUP);
       setCurrentStep(state.currentStep);
       setSelectedMode(state.selectedMode);
       setSelectedPracticeType(state.selectedPracticeType);
       // Clear the saved state after loading
-      localStorage.removeItem('gameState');
+      localStorage.removeItem('progessState');
+    }
+    if(quizData){
+      localStorage.removeItem('quizData');
+    }
+    if(scrambleData){
+      localStorage.removeItem('scrambleData');
+    }
+    if(quizProgress){
+      localStorage.removeItem('quizProgress');
+    }
+    if(scrambleProgress){
+      localStorage.removeItem('scrambleProgress');
     }
   }, []);
 

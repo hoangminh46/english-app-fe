@@ -79,6 +79,7 @@ export default function QuizPage() {
         console.log("Dữ liệu từ API:", parsedData);
       } catch (error) {
         console.error("Lỗi khi parse dữ liệu quiz:", error);
+        router.push('/');
       }
     }
   }, []);
@@ -122,8 +123,14 @@ export default function QuizPage() {
 
   const createNewQuiz = () => {
     // Xóa tiến độ và dữ liệu quiz khi tạo bài mới
-    localStorage.removeItem("quizProgress");
-    localStorage.removeItem("quizData");
+    localStorage.removeItem('quizProgress');
+    localStorage.removeItem('quizData');
+    // Lưu trạng thái để hiển thị màn hình tùy chọn câu hỏi
+    localStorage.setItem('progessState', JSON.stringify({
+      currentStep: 5,
+      selectedMode: 'quiz'
+    }));
+    // Chuyển về trang chủ
     router.push('/');
   };
 

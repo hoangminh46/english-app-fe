@@ -12,8 +12,9 @@ export const GameComplete: React.FC<GameCompleteProps> = ({ score, totalWords })
   const handlePlayAgain = () => {
     // Clear game data
     localStorage.removeItem('scrambleData');
+    localStorage.removeItem('scrambleProgress');
     // Save state to indicate we want to show scramble customization screen
-    localStorage.setItem('gameState', JSON.stringify({
+    localStorage.setItem('progessState', JSON.stringify({
       currentStep: 5,
       selectedMode: 'practice',
       selectedPracticeType: 'scramble'
@@ -25,8 +26,9 @@ export const GameComplete: React.FC<GameCompleteProps> = ({ score, totalWords })
   const handleGoHome = () => {
     // Clear all game data and state
     localStorage.removeItem('scrambleData');
+    localStorage.removeItem('scrambleProgress');
     localStorage.removeItem('formData');
-    localStorage.removeItem('gameState');
+    localStorage.removeItem('progessState');
     // Navigate to home
     router.push('/');
   };
