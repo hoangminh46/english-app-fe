@@ -5,18 +5,8 @@ import { useRouter } from "next/navigation";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { encode } from 'base64-arraybuffer'
-
-type Question = {
-  id: number;
-  question: string;
-  options: string[];
-  correct_answer: number;
-  explanation: string;
-};
-
-type QuizData = {
-  questions: Question[];
-};
+import { QuizResponse } from "@/types/quiz";
+import VocabularyTooltip from "@/components/quiz/VocabularyTooltip";
 
 type QuizProgress = {
   currentQuestionIndex: number;
@@ -28,7 +18,7 @@ type QuizProgress = {
 
 export default function QuizPage() {
   const router = useRouter();
-  const [quizData, setQuizData] = useState<QuizData | null>(null);
+  const [quizData, setQuizData] = useState<QuizResponse | null>(null);
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
@@ -360,6 +350,40 @@ export default function QuizPage() {
   // Màn hình quiz
   const currentQuestion = quizData.questions[currentQuestionIndex];
   
+  // Hàm để thay thế từ vựng mới bằng tooltip
+  const renderQuestionWithTooltips = (question: string, newWords: Array<{ word: string; pronunciation: string; meaning: string }>) => {
+    if (!newWords || newWords.length === 0) return question;
+
+    let result = question;
+    newWords.forEach(({ word, pronunciation, meaning }) => {
+      const regex = new RegExp(`\\b${word}\\b`, 'gi');
+      result = result.replace(regex, `<vocabulary-tooltip word="${word}" pronunciation="${pronunciation}" meaning="${meaning}">${word}</vocabulary-tooltip>`);
+    });
+
+    const parts = result.split(/(<vocabulary-tooltip.*?<\/vocabulary-tooltip>)/g);
+    
+    return parts.map((part, index) => {
+      if (part.startsWith('<vocabulary-tooltip')) {
+        const wordMatch = part.match(/word="([^"]*)"/) || [];
+        const pronunciationMatch = part.match(/pronunciation="([^"]*)"/) || [];
+        const meaningMatch = part.match(/meaning="([^"]*)"/) || [];
+        const contentMatch = part.match(/>([^<]*)</) || [];
+        
+        return (
+          <VocabularyTooltip
+            key={index}
+            word={wordMatch[1] || ''}
+            pronunciation={pronunciationMatch[1] || ''}
+            meaning={meaningMatch[1] || ''}
+          >
+            {contentMatch[1] || ''}
+          </VocabularyTooltip>
+        );
+      }
+      return part;
+    });
+  };
+  
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-3xl mx-auto">
@@ -380,7 +404,9 @@ export default function QuizPage() {
           </div>
           
           <div className="border rounded-xl p-6 bg-gradient-to-r from-blue-50 to-blue-100 shadow-inner">
-            <h3 className="text-md sm:text-xl font-semibold mb-5 text-blue-800">{currentQuestion.question}</h3>
+            <h3 className="text-md sm:text-xl font-semibold mb-5 text-blue-800">
+              {renderQuestionWithTooltips(currentQuestion.question, currentQuestion.new_words)}
+            </h3>
             
             <div className="space-y-3">
               {currentQuestion.options.map((option, index) => (

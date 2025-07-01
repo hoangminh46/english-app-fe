@@ -21,17 +21,24 @@ export type FormData = {
   timer?: number;
 };
 
-export type Question = {
+export interface NewWord {
+  word: string;
+  pronunciation: string;
+  meaning: string;
+}
+
+export interface Question {
   id: number;
   question: string;
   options: string[];
   correct_answer: number;
   explanation: string;
-};
+  new_words: NewWord[];
+}
 
-export type QuizResponse = {
+export interface QuizResponse {
   questions: Question[];
-};
+}
 
 export interface ScrambleWord {
   id: number;
