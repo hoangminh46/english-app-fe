@@ -89,7 +89,7 @@ export default function Home() {
   const generateQuizMutation = useMutation({
     mutationFn: async (data: FormData) => {
       const response = await axios.post<QuizResponse>(
-        `${API_URL}/api/generate-quiz`,
+        `${API_URL}/api/quiz/generate`,
         data
       );
       return response.data;
@@ -105,7 +105,7 @@ export default function Home() {
   const generateQuickQuizMutation = useMutation({
     mutationFn: async () => {
       const response = await axios.post<QuizResponse>(
-        `${API_URL}/api/quick-quiz`
+        `${API_URL}/api/quiz/quick`
       );
       return response.data;
     },
@@ -120,7 +120,7 @@ export default function Home() {
   const generateScrambleMutation = useMutation({
     mutationFn: async (data: { topics: string[], difficulty: string, quantity: number }) => {
       const response = await axios.post<ScrambleResponse>(
-        `${API_URL}/api/scramble`,
+        `${API_URL}/api/scramble/generate`,
         data
       );
       return response.data;
