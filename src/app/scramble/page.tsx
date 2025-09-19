@@ -162,14 +162,20 @@ export default function ScramblePage() {
 
   if (words.length === 0) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-2xl font-bold text-gray-800 mb-4">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200">
+        <div className="bg-white shadow-xl rounded-2xl p-8 text-center border border-blue-100">
+          <h1 className="text-2xl font-bold text-blue-800 mb-4">
             Không tìm thấy dữ liệu trò chơi
           </h1>
-          <p className="text-gray-600">
+          <p className="text-blue-600 mb-6">
             Vui lòng quay lại trang chủ để bắt đầu trò chơi mới.
           </p>
+          <button
+            onClick={() => router.push('/')}
+            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+          >
+            Về trang chủ
+          </button>
         </div>
       </div>
     );
@@ -181,100 +187,94 @@ export default function ScramblePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 py-6 px-4">
-      <div className="max-w-lg mx-auto">
-        <div className="text-center mb-6">
-          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900">
-            Word Scramble
-          </h1>
-        </div>
-
-        <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
-          {/* Progress Bar */}
-          <div className="w-full h-2 bg-gray-100">
-            <div 
-              className="h-full bg-blue-500 transition-all duration-300"
-              style={{ width: `${((currentWordIndex + 1) / words.length) * 100}%` }}
-            />
-          </div>
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white shadow-xl rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 border border-blue-100">
 
           {/* Game Stats */}
-          <div className="grid grid-cols-3 divide-x divide-gray-100 bg-gray-50">
-            <div className="p-3 text-center">
-              <div className="text-xs text-gray-500 mb-1">Từ</div>
-              <div className="font-semibold">
-                <span className="text-blue-600">{currentWordIndex + 1}</span>
-                <span className="text-gray-400 mx-1">/</span>
-                <span className="text-gray-600">{words.length}</span>
+          <div className="grid grid-cols-3 divide-x divide-blue-200 bg-gradient-to-r from-blue-50 to-blue-100 rounded-xl mb-6">
+            <div className="p-4 text-center">
+              <div className="text-xs text-blue-600 mb-1 font-medium">Điểm số</div>
+              <div className="font-bold text-lg">
+                <span className="text-emerald-600">{score}</span>
+                <span className="text-blue-400 mx-1">/</span>
+                <span className="text-blue-700">{words.length}</span>
               </div>
             </div>
-            <div className="p-3 text-center">
-              <div className="text-xs text-gray-500 mb-1">Điểm</div>
-              <div className="font-semibold">
-                <span className="text-green-600">{score}</span>
-                <span className="text-gray-400 mx-1">/</span>
-                <span className="text-gray-600">{words.length}</span>
-              </div>
-            </div>
-            <div className="p-3 text-center">
-              <div className="text-xs text-gray-500 mb-1">Thời gian</div>
-              <div className={`font-semibold ${timeLeft <= 10 ? 'text-red-600' : 'text-blue-600'}`}>
+            <div className="p-4 text-center">
+              <div className="text-xs text-blue-600 mb-1 font-medium">Thời gian</div>
+              <div className={`font-bold text-lg ${timeLeft <= 10 ? 'text-red-600' : 'text-blue-600'}`}>
                 {timeLeft}s
               </div>
             </div>
+            <div className="p-4 text-center">
+              <div className="text-xs text-blue-600 mb-1 font-medium">Tiến độ</div>
+              <div className="font-bold text-lg text-blue-600">
+                {Math.round(((currentWordIndex + 1) / words.length) * 100)}%
+              </div>
+            </div>
           </div>
 
-          <div className="p-6">
+          <div className="border-2 border-blue-200 rounded-2xl p-4 sm:p-6 bg-gradient-to-r from-blue-50 to-blue-100 shadow-inner">
             {/* Hint Section */}
-            <div className="mb-8 text-center">
-              <button
-                onClick={() => setShowHint(true)}
-                className={`text-sm font-medium px-4 py-2 rounded-full transition-all
-                  ${showHint 
-                    ? 'bg-blue-100 text-blue-700' 
-                    : 'text-blue-600 hover:bg-blue-50'}`}
-                disabled={isCorrect || showAnswer}
-              >
-                {showHint ? 'Gợi ý' : 'Hiện gợi ý'}
-              </button>
+            <div className="mb-6 text-center">
+              {!showHint && (
+                <button
+                  onClick={() => setShowHint(true)}
+                  className="text-sm font-medium px-4 py-2 rounded-lg transition-all duration-200 bg-blue-500 text-white hover:bg-blue-600"
+                  disabled={isCorrect || showAnswer}
+                >
+                  Hiện gợi ý
+                </button>
+              )}
               {showHint && (
-                <p className="mt-3 text-sm text-gray-600 bg-blue-50 p-3 rounded-lg">
-                  {words[currentWordIndex].hint}
-                </p>
+                <div className="p-4 bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-300 rounded-xl shadow-lg">
+                  <div className="flex items-start">
+                    <div className="mr-3 bg-gradient-to-r from-emerald-400 to-green-500 p-2 rounded-full flex-shrink-0">
+                      <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                      </svg>
+                    </div>
+                    <div className="flex-1 text-left">
+                      <h4 className="font-bold text-emerald-900 text-sm">Gợi ý:</h4>
+                      <p className="text-emerald-800 text-sm leading-relaxed font-medium">{words[currentWordIndex].hint}</p>
+                    </div>
+                  </div>
+                </div>
               )}
             </div>
 
             {/* Selected Letters */}
             <div className="mb-8">
               <div className="flex justify-between items-center mb-4">
-                <h3 className="text-sm font-medium text-gray-700">Đáp án của bạn</h3>
+                <h3 className="text-lg font-bold text-blue-800">Đáp án của bạn</h3>
                 <button
                   onClick={handleReset}
                   disabled={isCorrect || showAnswer}
-                  className={`text-xs px-3 py-1.5 rounded-full font-medium transition-colors
-                    ${isCorrect || showAnswer
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                      : 'bg-yellow-100 text-yellow-700 hover:bg-yellow-200'
-                    }`}
+                  className={`text-sm px-4 py-2 rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
+                    isCorrect || showAnswer
+                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white hover:from-yellow-600 hover:to-orange-600'
+                  }`}
                 >
                   Đặt lại
                 </button>
               </div>
-              <div className="flex justify-center gap-1.5">
+              <div className="flex justify-center gap-1.5 flex-wrap">
                 {Array.from({ length: words[currentWordIndex].word.length }).map((_, index) => {
                   const letter = selectedLetters[index];
                   return (
                     <div
                       key={`selected-${index}`}
-                      className={`w-10 h-10 flex items-center justify-center text-lg font-bold 
-                        rounded-lg transition-all duration-200
+                      className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-lg font-bold 
+                        rounded-lg transition-all duration-200 shadow-sm hover:shadow-md
                         ${isCorrect 
-                          ? 'bg-green-100 border-2 border-green-400 transform scale-105'
+                          ? 'bg-emerald-100 border-2 border-emerald-400 transform scale-105 text-emerald-800'
                           : showAnswer
-                            ? 'bg-red-100 border-2 border-red-400'
+                            ? 'bg-red-100 border-2 border-red-400 text-red-800'
                             : letter 
-                              ? 'bg-white border-2 border-blue-400 cursor-pointer hover:bg-gray-50 hover:scale-105' 
-                              : 'bg-gray-50 border-2 border-gray-200'
+                              ? 'bg-white border-2 border-blue-400 cursor-pointer hover:bg-blue-50 hover:scale-105 text-blue-800' 
+                              : 'bg-gray-100 border-2 border-gray-300 text-gray-500'
                         }`}
                       onClick={() => !isCorrect && !showAnswer && letter && handleLetterRemove(letter, index)}
                     >
@@ -287,50 +287,58 @@ export default function ScramblePage() {
 
             {/* Show Answer Section */}
             {(showAnswer || isCorrect) && (
-              <div className={`mb-8 rounded-xl p-4 border ${
+              <div className={`mb-8 rounded-xl p-4 sm:p-6 border-2 shadow-lg ${
                 isCorrect 
-                  ? 'bg-green-50 border-green-100' 
-                  : 'bg-red-50 border-red-100'
+                  ? 'bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-300' 
+                  : 'bg-gradient-to-r from-red-50 to-pink-50 border-red-300'
               }`}>
-                <div className="flex items-center mb-2">
-                  {isCorrect ? (
-                    <svg className="w-5 h-5 text-green-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-                    </svg>
-                  ) : (
-                    <svg className="w-5 h-5 text-red-500 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  )}
-                  <h4 className={`text-sm font-semibold ${
-                    isCorrect ? 'text-green-700' : 'text-red-700'
+                <div className="flex items-start">
+                  <div className={`mr-3 p-2 rounded-full flex-shrink-0 ${
+                    isCorrect 
+                      ? 'bg-gradient-to-r from-emerald-400 to-green-500' 
+                      : 'bg-gradient-to-r from-red-400 to-pink-500'
                   }`}>
-                    {isCorrect ? 'Chính xác!' : 'Hết thời gian!'}
-                  </h4>
+                    {isCorrect ? (
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      </svg>
+                    )}
+                  </div>
+                  <div className="flex-1">
+                    <h4 className={`text-sm font-bold mb-1 ${
+                      isCorrect ? 'text-emerald-900' : 'text-red-900'
+                    }`}>
+                      {isCorrect ? 'Chính xác!' : 'Hết thời gian!'}
+                    </h4>
+                    <p className="text-sm text-gray-800 mb-1 font-medium">
+                      Đáp án: <span className="font-bold text-lg">{words[currentWordIndex].word}</span>
+                    </p>
+                    <p className="text-sm text-gray-700 leading-relaxed">
+                      {words[currentWordIndex].explanation}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-sm text-gray-700 mb-2">
-                  Đáp án: <span className="font-bold">{words[currentWordIndex].word}</span>
-                </p>
-                <p className="text-xs text-gray-600">
-                  {words[currentWordIndex].explanation}
-                </p>
               </div>
             )}
 
             {/* Available Letters */}
             <div>
-              <h3 className="text-sm font-medium text-gray-700 mb-3">Chọn chữ cái</h3>
+              <h3 className="text-lg font-bold text-blue-800 mb-4">Chọn chữ cái</h3>
               <div className="flex justify-center flex-wrap gap-1.5">
                 {availableLetters.map((letter, index) => (
                   <div
                     key={`available-${index}`}
-                    className={`w-10 h-10 flex items-center justify-center text-lg font-bold 
-                      rounded-lg transition-all duration-200
+                    className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-lg font-bold 
+                      rounded-lg transition-all duration-200 shadow-sm hover:shadow-md
                       ${!letter 
-                        ? 'bg-gray-100 border-2 border-gray-200' 
+                        ? 'bg-gray-100 border-2 border-gray-300 text-gray-400' 
                         : isCorrect || showAnswer
-                          ? 'bg-gray-100 border-2 border-gray-200 cursor-not-allowed'
-                          : 'bg-white border-2 border-blue-400 cursor-pointer hover:bg-blue-50 hover:scale-105'
+                          ? 'bg-gray-100 border-2 border-gray-300 cursor-not-allowed text-gray-400'
+                          : 'bg-white border-2 border-blue-400 cursor-pointer hover:bg-blue-50 hover:scale-105 text-blue-800'
                       }`}
                     onClick={() => letter && handleLetterSelect(letter, index)}
                   >
@@ -345,8 +353,7 @@ export default function ScramblePage() {
               <div className="mt-8 flex justify-center">
                 <button
                   onClick={handleNext}
-                  className="w-full sm:w-auto px-6 py-2.5 bg-blue-600 text-white text-sm font-medium rounded-full
-                    hover:bg-blue-700 transition-colors shadow-sm hover:shadow"
+                  className="w-full sm:w-auto px-8 py-4 rounded-xl font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 active:translate-y-0 bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700"
                 >
                   {currentWordIndex < words.length - 1 ? 'Tiếp tục' : 'Kết thúc'}
                 </button>

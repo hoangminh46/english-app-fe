@@ -124,6 +124,19 @@ export default function QuizPage() {
     router.push('/');
   };
 
+  const selectDifferentLanguage = () => {
+    // Xóa tiến độ và dữ liệu quiz khi chọn ngôn ngữ khác
+    localStorage.removeItem('quizProgress');
+    localStorage.removeItem('quizData');
+    // Lưu trạng thái để hiển thị màn hình chọn ngôn ngữ
+    localStorage.setItem('progessState', JSON.stringify({
+      currentStep: 2,
+      selectedMode: 'quiz'
+    }));
+    // Chuyển về trang chủ
+    router.push('/');
+  };
+
   const calculateScore = () => {
     if (!quizData) return 0;
     
@@ -332,6 +345,12 @@ export default function QuizPage() {
                 Tạo câu hỏi mới
               </button>
               <button
+                onClick={selectDifferentLanguage}
+                className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-base"
+              >
+                Chọn ngôn ngữ khác
+              </button>
+              <button
                 onClick={exportToPDF}
                 disabled={isExporting}
                 className={`w-full sm:w-auto bg-green-600 text-white px-6 py-3 rounded-lg transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-base ${
@@ -385,44 +404,44 @@ export default function QuizPage() {
   };
   
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-100 via-blue-200 to-blue-300 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-3xl mx-auto">
-        <div className="bg-white shadow-lg rounded-xl p-8 mb-6 border border-blue-200">
-          <div className="flex justify-between items-center mb-6">
-            <h1 className="text-2xl font-bold text-blue-600">Bộ câu hỏi của bạn</h1>
-            <div className="px-3 py-1 rounded-full bg-blue-100 text-blue-700 font-medium text-sm">
-              Câu {currentQuestionIndex + 1}/{quizData.questions.length}
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-blue-100 to-blue-200 py-8 sm:py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-4xl mx-auto">
+        <div className="bg-white shadow-xl rounded-2xl p-4 sm:p-6 lg:p-8 mb-6 border border-blue-100">
+          {/* Question counter with progress indicator */}
+          <div className="flex flex-col items-center mb-2">
+            <div className="flex justify-between items-center w-full mb-4">
+              <h1 className="text-xl sm:text-2xl font-bold text-blue-800">Bài tập trắc nghiệm</h1>
+              <div className="px-5 py-2 rounded-full bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white font-bold text-base sm:text-lg shadow-lg transform hover:scale-105 transition-transform duration-200">
+                {currentQuestionIndex + 1}/{quizData.questions.length}
+              </div>
             </div>
           </div>
           
-          {/* Progress bar */}
-          <div className="w-full h-2 bg-gray-200 rounded-full mb-8">
-            <div 
-              className="h-full bg-gradient-to-r from-blue-400 to-blue-600 rounded-full transition-all duration-500 ease-out"
-              style={{ width: `${((currentQuestionIndex + 1) / quizData.questions.length) * 100}%` }}
-            ></div>
-          </div>
-          
-          <div className="border rounded-xl p-6 bg-gradient-to-r from-blue-50 to-blue-100 shadow-inner">
-            <h3 className="text-md sm:text-xl font-semibold mb-5 text-blue-800">
+          <div className="border-2 border-blue-200 rounded-2xl p-4 sm:p-6 bg-gradient-to-r from-blue-50 to-blue-100 shadow-inner">
+            <h3 className="text-lg sm:text-xl lg:text-2xl font-bold mb-6 text-blue-800 leading-relaxed">
               {renderQuestionWithTooltips(currentQuestion.question, currentQuestion.new_words)}
             </h3>
             
-            <div className="space-y-3">
+            <div className="space-y-3 sm:space-y-4">
               {currentQuestion.options.map((option, index) => (
                 <div 
                   key={index}
                   onClick={() => handleAnswerSelect(index)}
-                  className={`p-2 sm:p-4 border rounded-lg cursor-pointer transition-all shadow-sm hover:shadow ${
+                  className={`p-2 sm:p-5 border-2 rounded-xl cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98] ${
                     selectedAnswer === null
-                      ? "hover:bg-blue-100 border-blue-200"
+                      ? `hover:bg-blue-50 border-blue-300 hover:border-blue-400 bg-white hover:shadow-blue-100 ${
+                          index === 0 ? "hover:bg-blue-50" : 
+                          index === 1 ? "hover:bg-indigo-50" : 
+                          index === 2 ? "hover:bg-purple-50" : 
+                          "hover:bg-cyan-50"
+                        }`
                       : selectedAnswer === index
                         ? index === currentQuestion.correct_answer
-                          ? "border-emerald-500 bg-emerald-50 shadow-emerald-100"
-                          : "border-red-500 bg-red-50 shadow-red-100"
+                          ? "border-emerald-500 bg-emerald-50 shadow-emerald-200"
+                          : "border-red-500 bg-red-50 shadow-red-200"
                         : index === currentQuestion.correct_answer && showExplanation
-                          ? "border-emerald-500 bg-emerald-50 shadow-emerald-100"
-                          : "border-gray-200"
+                          ? "border-emerald-500 bg-emerald-50 shadow-emerald-200"
+                          : "border-blue-300 bg-white"
                   }`}
                   tabIndex={0}
                   aria-label={`Đáp án ${String.fromCharCode(65 + index)}: ${option}`}
@@ -433,7 +452,7 @@ export default function QuizPage() {
                   }}
                 >
                   <div className="flex items-center">
-                    <span className={`flex items-center justify-center w-8 h-8 rounded-full mr-3 font-medium px-2.5 ${
+                    <span className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full mr-4 font-bold text-lg sm:text-xl flex-shrink-0 ${
                       selectedAnswer === null
                         ? "bg-blue-100 text-blue-700"
                         : selectedAnswer === index
@@ -444,37 +463,42 @@ export default function QuizPage() {
                             ? "bg-emerald-500 text-white"
                             : "bg-blue-100 text-blue-700"
                     }`}>{String.fromCharCode(65 + index)}</span>
-                    <span className={`${selectedAnswer !== null && (
-                      (selectedAnswer === index && index === currentQuestion.correct_answer) ||
-                      (index === currentQuestion.correct_answer && showExplanation)
-                    ) ? "font-medium text-emerald-800" : ""}`}>{option}</span>
+                    <span className={`text-base sm:text-lg leading-relaxed flex-1 ${
+                      selectedAnswer !== null && (
+                        (selectedAnswer === index && index === currentQuestion.correct_answer) ||
+                        (index === currentQuestion.correct_answer && showExplanation)
+                      ) ? "font-semibold text-emerald-800" : "text-blue-800"
+                    }`}>{option}</span>
                   </div>
                 </div>
               ))}
             </div>
             
             {showExplanation && (
-              <div className="mt-6 p-5 bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-lg shadow-inner">
+              <div className="mt-6 p-4 sm:p-6 bg-gradient-to-r from-emerald-50 via-green-50 to-teal-50 border-2 border-emerald-300 rounded-xl shadow-lg">
                 <div className="flex items-start">
-                  <div className="mr-3 bg-blue-100 p-1 rounded-full">
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  <div className="mr-4 bg-gradient-to-r from-emerald-400 to-green-500 p-2 rounded-full flex-shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                     </svg>
                   </div>
-                  <p className="text-blue-700">{currentQuestion.explanation}</p>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-emerald-900 mb-2 text-lg">Giải thích:</h4>
+                    <p className="text-emerald-800 text-base sm:text-lg leading-relaxed font-medium">{currentQuestion.explanation}</p>
+                  </div>
                 </div>
               </div>
             )}
           </div>
           
-          <div className="mt-8 flex justify-end">
+          <div className="mt-8 flex justify-center sm:justify-end">
             <button
               onClick={handleNextQuestion}
               disabled={selectedAnswer === null}
-              className={`px-6 py-3 rounded-lg font-medium transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
+              className={`w-full sm:w-auto px-8 py-4 rounded-xl font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 active:translate-y-0 ${
                 selectedAnswer === null
                   ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                  : "bg-gradient-to-r from-blue-400 to-blue-600 text-white hover:from-blue-500 hover:to-blue-700"
+                  : "bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700"
               }`}
               aria-label={currentQuestionIndex < quizData.questions.length - 1 ? "Câu tiếp theo" : "Kết thúc bài kiểm tra"}
             >
