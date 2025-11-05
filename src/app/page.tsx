@@ -33,7 +33,7 @@ export default function Home() {
     audience: "",
     language: "",
     subtopics: [],
-    difficulty: "Cơ bản",
+    difficulty: "beginner",
     quantity: 10,
     category: "",
     mainTopic: "",
@@ -44,7 +44,7 @@ export default function Home() {
     audience: "",
     language: "",
     subtopics: [],
-    difficulty: "Cơ bản",
+    difficulty: "beginner",
     quantity: 5,
     category: "",
     mainTopic: "",
@@ -247,15 +247,15 @@ export default function Home() {
         subtopics: currentData.subtopics.filter(name => name !== topicName),
       });
     } else {
-      // If selecting "Chủ đề ngẫu nhiên", clear all other selections
-      if (topicName === 'Chủ đề ngẫu nhiên') {
+      // If selecting "Random Topic", clear all other selections
+      if (topicName === 'Random Topic') {
         setData({
           ...currentData,
           subtopics: [topicName],
         });
       } 
-      // If not "Chủ đề ngẫu nhiên" and haven't reached the limit
-      else if (currentData.subtopics.length < 3 && !currentData.subtopics.includes('Chủ đề ngẫu nhiên')) {
+      // If not "Random Topic" and haven't reached the limit
+      else if (currentData.subtopics.length < 3 && !currentData.subtopics.includes('Random Topic')) {
         setData({
           ...currentData,
           subtopics: [...currentData.subtopics, topicName],
@@ -324,7 +324,7 @@ export default function Home() {
         audience: formData.audience,
         language: formData.language,
         subtopics: [],
-        difficulty: "Cơ bản",
+        difficulty: "beginner",
         quantity: 10,
         category: "",
         mainTopic: "",
@@ -335,7 +335,7 @@ export default function Home() {
         audience: formData.audience,
         language: formData.language,
         subtopics: [],
-        difficulty: "Cơ bản",
+        difficulty: "beginner",
         quantity: 5,
         category: "",
         mainTopic: "",
@@ -351,7 +351,7 @@ export default function Home() {
       audience: formData.audience,
       language: formData.language,
       subtopics: [],
-      difficulty: "Cơ bản",
+      difficulty: "beginner",
       quantity: 5,
       category: "",
       mainTopic: "",
