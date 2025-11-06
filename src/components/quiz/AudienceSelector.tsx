@@ -8,26 +8,26 @@ import {
 } from '@heroicons/react/24/outline';
 
 type AudienceInfo = {
-  [key in typeof audiences[number]]: {
+  [key: string]: {
     icon: React.ElementType;
     description: string;
   }
 }
 
 const audienceInfo: AudienceInfo = {
-  "Học sinh": {
+  "student": {
     icon: AcademicCapIcon,
     description: "Dành cho các bạn học sinh phổ thông"
   },
-  "Sinh viên": {
+  "college": {
     icon: UserGroupIcon,
     description: "Phù hợp với sinh viên đại học, cao đẳng"
   },
-  "Người đi làm": {
+  "worker": {
     icon: BriefcaseIcon,
     description: "Từ vựng và ngữ pháp cho người đi làm"
   },
-  "Người cao tuổi": {
+  "senior": {
     icon: HeartIcon,
     description: "Học ngoại ngữ không giới hạn độ tuổi"
   }
@@ -51,21 +51,21 @@ export const AudienceSelector: React.FC<AudienceSelectorProps> = ({
       
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
         {audiences.map((audience) => {
-          const AudienceIcon = audienceInfo[audience].icon;
+          const AudienceIcon = audienceInfo[audience.value].icon;
           return (
             <button
-              key={audience}
+              key={audience.value}
               type="button"
               className={`group p-4 sm:p-6 border-2 rounded-xl transition-all duration-300 hover:scale-[1.02] ${
-                selectedAudience === audience
+                selectedAudience === audience.value
                   ? "border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg"
                   : "border-gray-200 hover:border-blue-300 hover:bg-blue-50/50"
               }`}
-              onClick={() => onSelectAudience(audience)}
+              onClick={() => onSelectAudience(audience.value)}
             >
               <div className="flex items-center sm:flex-col sm:items-center space-x-3 sm:space-x-0 sm:space-y-4">
                 <div className={`p-2 sm:p-3 rounded-full transition-colors duration-300 ${
-                  selectedAudience === audience
+                  selectedAudience === audience.value
                     ? "bg-blue-500 text-white"
                     : "bg-gray-100 text-gray-600 group-hover:bg-blue-100 group-hover:text-blue-600"
                 }`}>
@@ -73,12 +73,12 @@ export const AudienceSelector: React.FC<AudienceSelectorProps> = ({
                 </div>
                 <div className="flex-1 sm:flex-none text-left sm:text-center">
                   <h3 className={`text-lg sm:text-xl font-semibold mb-1 sm:mb-2 ${
-                    selectedAudience === audience ? "text-blue-600" : "text-gray-800"
+                    selectedAudience === audience.value ? "text-blue-600" : "text-gray-800"
                   }`}>
-                    {audience}
+                    {audience.label}
                   </h3>
                   <p className="text-gray-600 text-xs sm:text-sm line-clamp-2 sm:line-clamp-none">
-                    {audienceInfo[audience].description}
+                    {audienceInfo[audience.value].description}
                   </p>
                 </div>
               </div>

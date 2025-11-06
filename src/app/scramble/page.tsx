@@ -266,7 +266,7 @@ export default function ScramblePage() {
                   return (
                     <div
                       key={`selected-${index}`}
-                      className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-lg font-bold 
+                      className={`w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center text-lg font-bold 
                         rounded-lg transition-all duration-200 shadow-sm hover:shadow-md
                         ${isCorrect 
                           ? 'bg-emerald-100 border-2 border-emerald-400 transform scale-105 text-emerald-800'
@@ -287,66 +287,117 @@ export default function ScramblePage() {
 
             {/* Show Answer Section */}
             {(showAnswer || isCorrect) && (
-              <div className={`mb-8 rounded-xl p-4 sm:p-6 border-2 shadow-lg ${
+              <div className={`mb-6 rounded-xl overflow-hidden border-2 shadow-lg ${
                 isCorrect 
-                  ? 'bg-gradient-to-r from-emerald-50 to-green-50 border-emerald-300' 
-                  : 'bg-gradient-to-r from-red-50 to-pink-50 border-red-300'
+                  ? 'border-emerald-400 bg-white' 
+                  : 'border-red-400 bg-white'
               }`}>
-                <div className="flex items-start">
-                  <div className={`mr-3 p-2 rounded-full flex-shrink-0 ${
-                    isCorrect 
-                      ? 'bg-gradient-to-r from-emerald-400 to-green-500' 
-                      : 'bg-gradient-to-r from-red-400 to-pink-500'
-                  }`}>
+                {/* Header with Status */}
+                <div className={`px-4 py-2.5 ${
+                  isCorrect 
+                    ? 'bg-gradient-to-r from-emerald-500 to-green-500' 
+                    : 'bg-gradient-to-r from-red-500 to-pink-500'
+                }`}>
+                  <div className="flex items-center gap-2">
                     {isCorrect ? (
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                      <svg className="w-5 h-5 stroke-white" fill="none" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                        <path d="M5 13l4 4L19 7" />
                       </svg>
                     ) : (
-                      <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                      <svg className="w-5 h-5 stroke-white" fill="none" strokeWidth={2.5} strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                        <path d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
                       </svg>
                     )}
-                  </div>
-                  <div className="flex-1">
-                    <h4 className={`text-sm font-bold mb-1 ${
-                      isCorrect ? 'text-emerald-900' : 'text-red-900'
-                    }`}>
+                    <h4 className="text-white font-bold text-sm">
                       {isCorrect ? 'Chính xác!' : 'Hết thời gian!'}
                     </h4>
-                    <p className="text-sm text-gray-800 mb-1 font-medium">
-                      Đáp án: <span className="font-bold text-lg">{words[currentWordIndex].word}</span>
-                    </p>
-                    <p className="text-sm text-gray-700 leading-relaxed">
-                      {words[currentWordIndex].explanation}
-                    </p>
+                  </div>
+                </div>
+
+                {/* Content */}
+                <div className="py-2 px-4 pb-4 bg-white">
+                  {/* Word and Pronunciation */}
+                  <div className="mb-4">
+                    <div className="flex flex-col sm:flex-row sm:items-center gap-2 mb-2">
+                      <div className="flex items-baseline gap-2 flex-wrap">
+                        <span className="font-bold text-2xl uppercase tracking-wide text-blue-900">
+                          {words[currentWordIndex].word}
+                        </span>
+                        <span className="text-sm italic text-blue-600">
+                        {words[currentWordIndex].explanation.pronunciation}
+                        </span>
+                        <span className="text-xs px-2 py-1 rounded-full font-semibold uppercase tracking-wider w-fit bg-blue-100 text-blue-700">
+                          {words[currentWordIndex].explanation.partOfSpeech}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <div className={`w-1 h-4 rounded-full ${
+                        isCorrect 
+                          ? 'bg-gradient-to-b from-emerald-500 to-emerald-600' 
+                          : 'bg-gradient-to-b from-red-500 to-red-600'
+                      }`}></div>
+                      <p className="text-sm font-bold text-gray-800">Ý nghĩa:</p>
+                      <p className="text-sm leading-relaxed text-gray-700">
+                        {words[currentWordIndex].explanation.meaning}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Example */}
+                  <div className={`rounded-lg p-3 bg-gradient-to-br from-blue-50 to-indigo-50 border-l-4 ${
+                    isCorrect ? 'border-emerald-500' : 'border-red-500'
+                  }`}>
+                    <div className="flex items-center gap-2 mb-2">
+                      <div className={`w-1 h-4 rounded-full ${
+                        isCorrect 
+                          ? 'bg-gradient-to-b from-emerald-500 to-emerald-600' 
+                          : 'bg-gradient-to-b from-red-500 to-red-600'
+                      }`}></div>
+                      <p className="text-sm font-bold text-gray-800">Ví dụ:</p>
+                    </div>
+                    <div className="ml-3 space-y-1.5">
+                      <p className="text-sm italic leading-relaxed text-gray-800">
+                        &ldquo;{words[currentWordIndex].explanation.example}&rdquo;
+                      </p>
+                      <div className="flex items-start gap-2">
+                        <span className={`font-bold text-sm ${
+                          isCorrect ? 'text-emerald-600' : 'text-red-600'
+                        }`}>→</span>
+                        <p className="text-sm leading-relaxed flex-1 text-gray-700">
+                          {words[currentWordIndex].explanation.exampleTranslation}
+                        </p>
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
             )}
 
             {/* Available Letters */}
-            <div>
-              <h3 className="text-lg font-bold text-blue-800 mb-4">Chọn chữ cái</h3>
-              <div className="flex justify-center flex-wrap gap-1.5">
-                {availableLetters.map((letter, index) => (
-                  <div
-                    key={`available-${index}`}
-                    className={`w-10 h-10 sm:w-12 sm:h-12 flex items-center justify-center text-lg font-bold 
-                      rounded-lg transition-all duration-200 shadow-sm hover:shadow-md
-                      ${!letter 
-                        ? 'bg-gray-100 border-2 border-gray-300 text-gray-400' 
-                        : isCorrect || showAnswer
-                          ? 'bg-gray-100 border-2 border-gray-300 cursor-not-allowed text-gray-400'
-                          : 'bg-white border-2 border-blue-400 cursor-pointer hover:bg-blue-50 hover:scale-105 text-blue-800'
-                      }`}
-                    onClick={() => letter && handleLetterSelect(letter, index)}
-                  >
-                    {letter}
-                  </div>
-                ))}
+            {(!showAnswer && !isCorrect) && (
+              <div>
+                <h3 className="text-lg font-bold text-blue-800 mb-4">Chọn chữ cái</h3>
+                <div className="flex justify-center flex-wrap gap-1.5">
+                  {availableLetters.map((letter, index) => (
+                    <div
+                      key={`available-${index}`}
+                      className={`w-9 h-9 sm:w-12 sm:h-12 flex items-center justify-center text-lg font-bold 
+                        rounded-lg transition-all duration-200 shadow-sm hover:shadow-md
+                        ${!letter 
+                          ? 'bg-gray-100 border-2 border-gray-300 text-gray-400' 
+                          : isCorrect || showAnswer
+                            ? 'bg-gray-100 border-2 border-gray-300 cursor-not-allowed text-gray-400'
+                            : 'bg-white border-2 border-blue-400 cursor-pointer hover:bg-blue-50 hover:scale-105 text-blue-800'
+                        }`}
+                      onClick={() => letter && handleLetterSelect(letter, index)}
+                    >
+                      {letter}
+                    </div>
+                  ))}
+                </div>
               </div>
-            </div>
+            )}
 
             {/* Next Button */}
             {(isCorrect || showAnswer) && (

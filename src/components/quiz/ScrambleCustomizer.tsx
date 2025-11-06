@@ -1,5 +1,5 @@
 import React from 'react';
-import { FormData } from '@/types/quiz';
+import { FormData, difficulties } from '@/types/quiz';
 
 interface ScrambleCustomizerProps {
   formData: FormData;
@@ -17,21 +17,21 @@ export const ScrambleCustomizer: React.FC<ScrambleCustomizerProps> = ({
   onTimerChange,
 }) => {
   const topics = [
-    'Chủ đề ngẫu nhiên',
-    'Gia đình',
-    'Công việc',
-    'Du lịch',
-    'Giáo dục',
-    'Thể thao',
-    'Giải trí',
-    'Thời trang',
-    'Ẩm thực',
-    'Công nghệ',
-    'Môi trường',
-    'Sức khỏe'
+    { value: 'Random Topic', label: 'Chủ đề ngẫu nhiên' },
+    { value: 'Family', label: 'Gia đình' },
+    { value: 'Work', label: 'Công việc' },
+    { value: 'Travel', label: 'Du lịch' },
+    { value: 'Education', label: 'Giáo dục' },
+    { value: 'Sports', label: 'Thể thao' },
+    { value: 'Entertainment', label: 'Giải trí' },
+    { value: 'Fashion', label: 'Thời trang' },
+    { value: 'Food', label: 'Ẩm thực' },
+    { value: 'Technology', label: 'Công nghệ' },
+    { value: 'Environment', label: 'Môi trường' },
+    { value: 'Health', label: 'Sức khỏe' }
   ];
 
-  const isRandomSelected = formData.subtopics.includes('Chủ đề ngẫu nhiên');
+  const isRandomSelected = formData.subtopics.includes('Random Topic');
 
   return (
     <div className="space-y-6">
@@ -54,16 +54,16 @@ export const ScrambleCustomizer: React.FC<ScrambleCustomizerProps> = ({
         </div>
         <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
           {topics.map((topic) => {
-            const isSelected = formData.subtopics.includes(topic);
+            const isSelected = formData.subtopics.includes(topic.value);
             const isDisabled = !isSelected && 
               ((formData.subtopics.length >= 3) || 
               (isRandomSelected) || 
-              (topic !== 'Chủ đề ngẫu nhiên' && isRandomSelected));
+              (topic.value !== 'Random Topic' && isRandomSelected));
 
             return (
               <button
-                key={topic}
-                onClick={() => onTopicToggle(topic)}
+                key={topic.value}
+                onClick={() => onTopicToggle(topic.value)}
                 disabled={isDisabled}
                 className={`p-3 rounded-lg text-sm font-medium transition-colors
                   ${isSelected
@@ -73,7 +73,7 @@ export const ScrambleCustomizer: React.FC<ScrambleCustomizerProps> = ({
                       : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
               >
-                {topic}
+                {topic.label}
               </button>
             );
           })}
@@ -84,17 +84,17 @@ export const ScrambleCustomizer: React.FC<ScrambleCustomizerProps> = ({
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-gray-800">Độ khó</h3>
         <div className="grid grid-cols-3 gap-3">
-          {['Cơ bản', 'Trung bình', 'Nâng cao'].map((difficulty) => (
+          {difficulties.map((difficulty) => (
             <button
-              key={difficulty}
-              onClick={() => onDifficultyChange(difficulty)}
+              key={difficulty.value}
+              onClick={() => onDifficultyChange(difficulty.value)}
               className={`p-3 rounded-lg text-sm font-medium transition-colors
-                ${formData.difficulty === difficulty
+                ${formData.difficulty === difficulty.value
                   ? 'bg-blue-600 text-white'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                 }`}
             >
-              {difficulty}
+              {difficulty.label}
             </button>
           ))}
         </div>

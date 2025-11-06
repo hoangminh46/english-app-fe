@@ -31,7 +31,7 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
     setSelectedMainTopic('');
     const category = categories.find(cat => cat.id === categoryId);
     if (category) {
-      onCategorySelect(category.name);
+      onCategorySelect(category.nameEn);
     }
   };
 
@@ -40,19 +40,19 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
     const currentCategory = categories.find(cat => cat.id === selectedCategory);
     const topic = currentCategory?.topics.find(t => t.id === topicId);
     if (topic) {
-      onMainTopicSelect(topic.name);
+      onMainTopicSelect(topic.nameEn);
     }
   };
 
   const renderSubtopics = (subtopics: Topic[]) => {
     return subtopics.map((subtopic) => {
-      const isSelected = selectedTopics.includes(subtopic.name);
+      const isSelected = selectedTopics.includes(subtopic.nameEn);
       const isDisabled = selectedTopics.length >= 3 && !isSelected;
 
       return (
         <div
           key={subtopic.id}
-          onClick={() => !isDisabled && onTopicToggle(subtopic.name)}
+          onClick={() => !isDisabled && onTopicToggle(subtopic.nameEn)}
           className={`p-3 border-b last:border-b-0 flex items-center justify-between cursor-pointer transition-all ${
             isDisabled
               ? "bg-gray-50 opacity-75 cursor-not-allowed"
@@ -85,6 +85,19 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
 
   const currentCategory = categories.find(cat => cat.id === selectedCategory);
   const currentMainTopic = currentCategory?.topics.find(topic => topic.id === selectedMainTopic);
+
+  // Helper function to get Vietnamese name from English name
+  const getTopicNameVi = (nameEn: string): string => {
+    for (const category of categories) {
+      for (const topic of category.topics) {
+        if (topic.subtopics) {
+          const subtopic = topic.subtopics.find(st => st.nameEn === nameEn);
+          if (subtopic) return subtopic.name;
+        }
+      }
+    }
+    return nameEn;
+  };
 
   return (
     <div className="space-y-6 max-w-4xl mx-auto">
@@ -160,11 +173,11 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
               key={item.value}
               type="button"
               className={`px-4 py-2 rounded-lg transition-all shadow-sm ${
-                selectedDifficulty === item.label
+                selectedDifficulty === item.value
                   ? "bg-gradient-to-r from-blue-400 to-blue-600 text-white shadow-md hover:shadow-lg"
                   : "bg-blue-50 text-blue-700 hover:bg-blue-100"
               }`}
-              onClick={() => onDifficultyChange(item.label)}
+              onClick={() => onDifficultyChange(item.value)}
             >
               {item.label}
             </button>
@@ -218,12 +231,12 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
             <div className="flex flex-col gap-1">
               <span className="text-sm font-medium text-blue-600">Chủ đề con đã chọn:</span>
               <div className="flex flex-wrap gap-2">
-                {selectedTopics.map((topicName) => (
+                {selectedTopics.map((topicNameEn) => (
                   <div
-                    key={topicName}
+                    key={topicNameEn}
                     className="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 rounded-lg text-sm"
                   >
-                    {topicName}
+                    {getTopicNameVi(topicNameEn)}
                   </div>
                 ))}
               </div>
@@ -234,7 +247,7 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
               <div className="flex flex-col gap-1">
                 <span className="text-sm font-medium text-blue-600">Độ khó:</span>
                 <div className="px-3 py-1.5 bg-white border border-blue-200 text-blue-700 rounded-lg text-sm">
-                  {selectedDifficulty}
+                  {difficulties.find(d => d.value === selectedDifficulty)?.label || selectedDifficulty}
                 </div>
               </div>
               <div className="flex flex-col gap-1">
