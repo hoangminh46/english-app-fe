@@ -215,11 +215,20 @@ export default function QuizPage() {
       pdf.text(subtitle, subtitleX, 15);
       
       // Tạo bảng đáp án và giải thích
-      const tableData = quizData.questions.map((question, index) => [
-        `Câu ${index + 1}`,
-        String.fromCharCode(65 + question.correct_answer),
-        question.explanation
-      ]);
+      const tableData = quizData.questions.map((question, index) => {
+        let explanationText = question.explanation.summary;
+        if (question.explanation.formula && question.explanation.formula !== 'N/A') {
+          explanationText += `\n\nCông thức: ${question.explanation.formula}`;
+        }
+        if (question.explanation.note) {
+          explanationText += `\n\nLưu ý: ${question.explanation.note}`;
+        }
+        return [
+          `Câu ${index + 1}`,
+          String.fromCharCode(65 + question.correct_answer),
+          explanationText
+        ];
+      });
       
       autoTable(pdf, {
         head: [["Câu hỏi", "Đáp án", "Giải thích"]],
@@ -495,69 +504,60 @@ export default function QuizPage() {
 
                 {/* Content */}
                 <div className="p-4 bg-white">
-                  {(() => {
-                    // Tách explanation thành phần giải thích và ví dụ
-                    const explanation = currentQuestion.explanation;
-                    const exampleMatch = explanation.match(/Ví dụ:\s*(.+?)(?:\s*→\s*(.+))?$/is);
-                    
-                    let mainExplanation = explanation;
-                    let example = '';
-                    let exampleTranslation = '';
-                    
-                    if (exampleMatch) {
-                      mainExplanation = explanation.substring(0, exampleMatch.index).trim();
-                      example = exampleMatch[1]?.trim() || '';
-                      exampleTranslation = exampleMatch[2]?.trim() || '';
-                    }
-                    
-                    return (
-                      <>
-                        {/* Main Explanation */}
-                        <div className="mb-3">
-                          <div className="flex items-center gap-2 mb-1.5">
-                            <div className={`w-1 h-4 rounded-full ${
-                              selectedAnswer === currentQuestion.correct_answer
-                                ? 'bg-gradient-to-b from-emerald-500 to-emerald-600' 
-                                : 'bg-gradient-to-b from-red-500 to-red-600'
-                            }`}></div>
-                            <p className="text-sm font-bold text-gray-800">Giải thích:</p>
-                          </div>
-                          <p className="text-sm leading-relaxed text-gray-700 ml-3">{mainExplanation}</p>
-                        </div>
+                  {/* Summary Section */}
+                  <div className="mb-3">
+                    <div className="flex items-center gap-2 mb-1.5">
+                      <div className={`w-1 h-4 rounded-full ${
+                        selectedAnswer === currentQuestion.correct_answer
+                          ? 'bg-gradient-to-b from-emerald-500 to-emerald-600' 
+                          : 'bg-gradient-to-b from-red-500 to-red-600'
+                      }`}></div>
+                      <p className="text-sm font-bold text-gray-800">Giải thích:</p>
+                    </div>
+                    <p className="text-sm leading-relaxed text-gray-700 ml-3">{currentQuestion.explanation.summary}</p>
+                  </div>
 
-                        {/* Example Section - Only show if example exists */}
-                        {example && (
-                          <div className={`rounded-lg p-3 bg-gradient-to-br from-blue-50 to-indigo-50 border-l-4 ${
-                            selectedAnswer === currentQuestion.correct_answer ? 'border-emerald-500' : 'border-red-500'
-                          }`}>
-                            <div className="flex items-center gap-2 mb-2">
-                              <div className={`w-1 h-4 rounded-full ${
-                                selectedAnswer === currentQuestion.correct_answer
-                                  ? 'bg-gradient-to-b from-emerald-500 to-emerald-600' 
-                                  : 'bg-gradient-to-b from-red-500 to-red-600'
-                              }`}></div>
-                              <p className="text-sm font-bold text-gray-800">Ví dụ:</p>
-                            </div>
-                            <div className="ml-3 space-y-1.5">
-                              <p className="text-sm italic leading-relaxed text-gray-800">
-                                &ldquo;{example}&rdquo;
-                              </p>
-                              {exampleTranslation && (
-                                <div className="flex items-start gap-2">
-                                  <span className={`font-bold text-sm ${
-                                    selectedAnswer === currentQuestion.correct_answer ? 'text-emerald-600' : 'text-red-600'
-                                  }`}>→</span>
-                                  <p className="text-sm leading-relaxed flex-1 text-gray-700">
-                                    {exampleTranslation}
-                                  </p>
-                                </div>
-                              )}
-                            </div>
-                          </div>
-                        )}
-                      </>
-                    );
-                  })()}
+                  {/* Formula Section - Only show if not N/A */}
+                  {currentQuestion.explanation.formula && currentQuestion.explanation.formula !== 'N/A' && (
+                    <div className={`rounded-lg p-3 mb-3 bg-gradient-to-br from-blue-50 to-indigo-50 border-l-4 ${
+                      selectedAnswer === currentQuestion.correct_answer ? 'border-emerald-500' : 'border-red-500'
+                    }`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className={`w-1 h-4 rounded-full ${
+                          selectedAnswer === currentQuestion.correct_answer
+                            ? 'bg-gradient-to-b from-emerald-500 to-emerald-600' 
+                            : 'bg-gradient-to-b from-red-500 to-red-600'
+                        }`}></div>
+                        <p className="text-sm font-bold text-gray-800">Công thức:</p>
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm font-mono leading-relaxed text-blue-900 bg-white px-3 py-2 rounded border border-blue-200">
+                          {currentQuestion.explanation.formula}
+                        </p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Note Section - Only show if exists */}
+                  {currentQuestion.explanation.note && (
+                    <div className={`rounded-lg p-3 bg-gradient-to-br from-amber-50 to-orange-50 border-l-4 ${
+                      selectedAnswer === currentQuestion.correct_answer ? 'border-emerald-500' : 'border-red-500'
+                    }`}>
+                      <div className="flex items-center gap-2 mb-2">
+                        <div className={`w-1 h-4 rounded-full ${
+                          selectedAnswer === currentQuestion.correct_answer
+                            ? 'bg-gradient-to-b from-emerald-500 to-emerald-600' 
+                            : 'bg-gradient-to-b from-red-500 to-red-600'
+                        }`}></div>
+                        <p className="text-sm font-bold text-gray-800">Lưu ý:</p>
+                      </div>
+                      <div className="ml-3">
+                        <p className="text-sm leading-relaxed text-gray-800">
+                          {currentQuestion.explanation.note}
+                        </p>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
             )}
