@@ -16,6 +16,7 @@ import { QuizTypeSelector } from "../components/quiz/QuizTypeSelector";
 import { ModeSelector } from "../components/quiz/ModeSelector";
 import { PracticeSelector } from "../components/quiz/PracticeSelector";
 import { ScrambleCustomizer } from "../components/quiz/ScrambleCustomizer";
+import { getUserPreferences, saveAudience, saveLanguage } from "../utils/userPreferences";
 // import { StepIndicator } from "@/components/StepIndicator";
 
 enum AppStep {
@@ -58,6 +59,21 @@ export default function Home() {
   // const totalSteps = 4; // Tổng số bước trong quy trình
 
   useEffect(() => {
+    // Load user preferences (audience and language)
+    const preferences = getUserPreferences();
+    if (preferences.audience || preferences.language) {
+      setFormData(prev => ({
+        ...prev,
+        audience: preferences.audience || prev.audience,
+        language: preferences.language || prev.language
+      }));
+      setScrambleFormData(prev => ({
+        ...prev,
+        audience: preferences.audience || prev.audience,
+        language: preferences.language || prev.language
+      }));
+    }
+
     const progessState = localStorage.getItem('progessState');
     const quizData = localStorage.getItem('quizData');
     const scrambleData = localStorage.getItem('scrambleData');
@@ -217,11 +233,17 @@ export default function Home() {
 
   const handleAudienceSelect = (audience: string) => {
     setFormData({ ...formData, audience });
+    setScrambleFormData({ ...scrambleFormData, audience });
+    // Save to localStorage
+    saveAudience(audience);
   };
 
   const handleLanguageSelect = (language: string) => {
     // When selecting a new language, clear previously selected topics
     setFormData({ ...formData, language, subtopics: [] });
+    setScrambleFormData({ ...scrambleFormData, language, subtopics: [] });
+    // Save to localStorage
+    saveLanguage(language);
   };
 
   const handleCategorySelect = (categoryName: string) => {

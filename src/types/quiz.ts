@@ -29,12 +29,18 @@ export interface NewWord {
   meaning: string;
 }
 
+export interface QuestionExplanation {
+  summary: string;
+  formula: string;
+  note: string;
+}
+
 export interface Question {
   id: number;
   question: string;
   options: string[];
   correct_answer: number;
-  explanation: string;
+  explanation: QuestionExplanation;
   new_words: NewWord[];
 }
 
@@ -93,7 +99,7 @@ export const difficulties = [
   { value: "advanced", label: "Nâng cao", labelEn: "Advanced" }
 ];
 
-export const quantityOptions = [10, 15, 20, 25];
+export const quantityOptions = [10, 15, 20];
 
 export const categories: Category[] = [
   {
