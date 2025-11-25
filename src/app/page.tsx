@@ -16,6 +16,7 @@ import { QuizTypeSelector } from "../components/quiz/QuizTypeSelector";
 import { ModeSelector } from "../components/quiz/ModeSelector";
 import { PracticeSelector } from "../components/quiz/PracticeSelector";
 import { ScrambleCustomizer } from "../components/quiz/ScrambleCustomizer";
+import { GrammarSelector } from "../components/quiz/GrammarSelector";
 import { getUserPreferences, saveAudience, saveLanguage } from "../utils/userPreferences";
 // import { StepIndicator } from "@/components/StepIndicator";
 
@@ -54,8 +55,13 @@ export default function Home() {
 
   const [isNavigating, setIsNavigating] = useState(false);
   const [selectedQuizType, setSelectedQuizType] = useState<'quick' | 'custom' | null>(null);
-  const [selectedMode, setSelectedMode] = useState<'quiz' | 'practice' | null>(null);
+  const [selectedMode, setSelectedMode] = useState<'quiz' | 'practice' | 'grammar' | null>(null);
   const [selectedPracticeType, setSelectedPracticeType] = useState<'scramble' | null>(null);
+  const [selectedGrammarTopic, setSelectedGrammarTopic] = useState<{
+    categoryId: string;
+    subcategoryId: string;
+    topicId: string;
+  } | null>(null);
   // const totalSteps = 4; // Tổng số bước trong quy trình
 
   useEffect(() => {
@@ -201,6 +207,8 @@ export default function Home() {
         setCurrentStep((prev) => prev + 1);
       } else if (selectedMode === 'quiz') {
         setCurrentStep((prev) => prev + 1);
+      } else if (selectedMode === 'grammar') {
+        setCurrentStep((prev) => prev + 1);
       }
     } else if (currentStep === 4) {
       // At quiz type or practice type selection step
@@ -225,6 +233,7 @@ export default function Home() {
       if (currentStep === 4) {
         setSelectedQuizType(null);
         setSelectedPracticeType(null);
+        setSelectedGrammarTopic(null);
       } else if (currentStep === 3) {
         setSelectedMode(null);
       }
@@ -335,11 +344,12 @@ export default function Home() {
     setSelectedQuizType(type);
   };
 
-  const handleModeSelect = (mode: 'quiz' | 'practice') => {
+  const handleModeSelect = (mode: 'quiz' | 'practice' | 'grammar') => {
     setSelectedMode(mode);
     // Reset subsequent selections when mode changes
     setSelectedQuizType(null);
     setSelectedPracticeType(null);
+    setSelectedGrammarTopic(null);
     // Reset formData when changing mode
     if (mode === 'quiz') {
       setFormData({
@@ -352,7 +362,7 @@ export default function Home() {
         mainTopic: "",
         timer: 20,
       });
-    } else {
+    } else if (mode === 'practice') {
       setScrambleFormData({
         audience: formData.audience,
         language: formData.language,
@@ -364,6 +374,7 @@ export default function Home() {
         timer: 20,
       });
     }
+    // No need to reset formData for grammar mode yet
   };
 
   const handlePracticeTypeSelect = (type: 'scramble') => {
@@ -381,6 +392,10 @@ export default function Home() {
     });
   };
 
+  const handleGrammarTopicSelect = (categoryId: string, subcategoryId: string, topicId: string) => {
+    setSelectedGrammarTopic({ categoryId, subcategoryId, topicId });
+  };
+
   // Update canGoNext conditions
   const canGoNext = 
     (currentStep === 1 && formData.audience) ||
@@ -388,7 +403,8 @@ export default function Home() {
     (currentStep === 3 && selectedMode) ||
     (currentStep === 4 && (
       (selectedMode === 'quiz' && selectedQuizType) ||
-      (selectedMode === 'practice' && selectedPracticeType)
+      (selectedMode === 'practice' && selectedPracticeType) ||
+      (selectedMode === 'grammar' && selectedGrammarTopic !== null)
     )) ||
     (currentStep === 5 && (
       (selectedMode === 'quiz' && formData.subtopics.length > 0) ||
@@ -574,6 +590,21 @@ export default function Home() {
                 </motion.div>
               )}
 
+              {currentStep === 4 && selectedMode === 'grammar' && (
+                <motion.div
+                  key="grammar-selector"
+                  initial={{ opacity: 0, x: 50 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -50 }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <GrammarSelector 
+                    onSelectTopic={handleGrammarTopicSelect}
+                    selectedTopic={selectedGrammarTopic?.topicId || null}
+                  />
+                </motion.div>
+              )}
+
               {currentStep === 5 && selectedMode === 'quiz' && (
                 <motion.div
                   key="quiz-customizer"
@@ -623,7 +654,7 @@ export default function Home() {
               onBack={handleBack}
               onNext={handleNext}
               onSubmit={handleSubmit}
-              mode={selectedMode || 'quiz'}
+              mode={selectedMode as 'quiz' | 'practice' | undefined}
             />
           </motion.div>
         </div>

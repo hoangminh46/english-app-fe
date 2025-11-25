@@ -29,26 +29,34 @@ export const PracticeSelector: React.FC<PracticeSelectorProps> = ({
         </p>
       </div>
 
-      <div className="grid grid-cols-1 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
         {practiceTypes.map((type) => (
           <button
             key={type.id}
             onClick={() => onSelectPracticeType(type.id as 'scramble')}
-            className={`group p-6 border-2 rounded-lg transition-all duration-300 flex flex-col items-center text-center ${
+            className={`group p-4 sm:p-6 border-2 rounded-xl transition-all duration-300 hover:scale-[1.02] ${
               selectedType === type.id
-                ? 'border-blue-500 bg-blue-50'
-                : 'hover:border-blue-300 hover:bg-gray-50'
+                ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg'
+                : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'
             }`}
           >
-            <div className={`w-16 h-16 mb-4 rounded-full flex items-center justify-center text-3xl font-bold text-blue-600 ${
-              selectedType === type.id ? 'bg-blue-200' : 'bg-blue-100 group-hover:bg-blue-200'
-            }`}>
-              {type.icon}
+            <div className="flex items-center sm:flex-col sm:items-center space-x-3 sm:space-x-0 sm:space-y-4">
+              <div className={`p-2 sm:p-3 rounded-full flex items-center justify-center text-2xl sm:text-3xl transition-colors duration-300 ${
+                selectedType === type.id
+                  ? 'bg-blue-500 text-white'
+                  : 'bg-gray-100 text-blue-600 group-hover:bg-blue-100 group-hover:text-blue-600'
+              }`}>
+                {type.icon}
+              </div>
+              <div className="flex-1 sm:flex-none text-left sm:text-center">
+                <h3 className={`text-lg sm:text-xl font-semibold mb-1 sm:mb-2 ${
+                  selectedType === type.id ? 'text-blue-600' : 'text-gray-800'
+                }`}>{type.title}</h3>
+                <p className="text-gray-600 text-xs sm:text-sm">
+                  {type.description}
+                </p>
+              </div>
             </div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">{type.title}</h3>
-            <p className="text-gray-600">
-              {type.description}
-            </p>
           </button>
         ))}
       </div>
