@@ -1,6 +1,6 @@
 'use client';
 
-import { NoteType } from '../../types/notes';
+import { NoteType } from '@/types/notes';
 
 interface TabNavigationProps {
   activeTab: NoteType;
@@ -40,7 +40,7 @@ export function TabNavigation({ activeTab, onTabChange, counts }: TabNavigationP
                   : 'bg-gray-200 text-gray-600'
               }`}
             >
-              {counts[tab.id]}
+              {counts[tab.id as NoteType]}
             </span>
           </div>
           {activeTab === tab.id && (
