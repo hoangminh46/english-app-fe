@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { FloatingNoteButton } from './FloatingNoteButton';
 import { NotesModal } from './NotesModal';
-import { useKnowledgeNotes } from '../../hooks/useKnowledgeNotes';
+import { useKnowledgeNotes } from '@/hooks/useKnowledgeNotes';
 
 export function KnowledgeNotesWidget() {
   const [isModalOpen, setIsModalOpen] = useState(false);

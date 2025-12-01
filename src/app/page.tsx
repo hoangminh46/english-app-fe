@@ -18,7 +18,6 @@ import { PracticeSelector } from "../components/quiz/PracticeSelector";
 import { ScrambleCustomizer } from "../components/quiz/ScrambleCustomizer";
 import { GrammarSelector } from "../components/quiz/GrammarSelector";
 import { getUserPreferences, saveAudience, saveLanguage } from "../utils/userPreferences";
-import { KnowledgeNotesWidget } from "../components/KnowledgeNotes/KnowledgeNotesWidget";
 // import { StepIndicator } from "@/components/StepIndicator";
 
 enum AppStep {
@@ -660,9 +659,6 @@ export default function Home() {
             />
           </motion.div>
         </div>
-
-        {/* Knowledge Notes Widget */}
-        <KnowledgeNotesWidget />
       </motion.div>
     </AnimatePresence>
   );
