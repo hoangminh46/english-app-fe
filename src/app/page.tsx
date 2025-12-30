@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import axios from "axios";
+import apiClient from "@/lib/axios";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -24,8 +24,6 @@ enum AppStep {
   WELCOME = "welcome",
   SETUP = "setup"
 }
-
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 export default function Home() {
   const router = useRouter();
@@ -111,8 +109,8 @@ export default function Home() {
 
   const generateQuizMutation = useMutation({
     mutationFn: async (data: FormData) => {
-      const response = await axios.post<QuizResponse>(
-        `${API_URL}/api/quiz/generate`,
+      const response = await apiClient.post<QuizResponse>(
+        '/api/quiz/generate',
         data
       );
       return response.data;
@@ -127,8 +125,8 @@ export default function Home() {
 
   const generateQuickQuizMutation = useMutation({
     mutationFn: async () => {
-      const response = await axios.post<QuizResponse>(
-        `${API_URL}/api/quiz/quick`
+      const response = await apiClient.post<QuizResponse>(
+        '/api/quiz/quick'
       );
       return response.data;
     },
@@ -142,8 +140,8 @@ export default function Home() {
 
   const generateScrambleMutation = useMutation({
     mutationFn: async (data: { topics: string[], difficulty: string, quantity: number }) => {
-      const response = await axios.post<ScrambleResponse>(
-        `${API_URL}/api/scramble/generate`,
+      const response = await apiClient.post<ScrambleResponse>(
+        '/api/scramble/generate',
         data
       );
       return response.data;

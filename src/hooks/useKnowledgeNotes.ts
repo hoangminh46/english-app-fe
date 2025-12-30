@@ -6,23 +6,28 @@ import { toast } from 'sonner';
 import { KnowledgeNote, NoteType, NoteFormData } from '../types/notes';
 import * as noteService from '../services/noteService';
 
-export function useKnowledgeNotes() {
+export function useKnowledgeNotes(enabled: boolean = false) {
   const queryClient = useQueryClient();
   const [notes, setNotes] = useState<KnowledgeNote[]>([]);
 
-  // Fetch notes from API
+  // Fetch notes from API - only when enabled (modal is open)
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['notes'],
     queryFn: async () => {
       return await noteService.getNotes();
     },
+    enabled, // Only fetch when enabled is true
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
   // Update local state when data changes
   useEffect(() => {
     if (data) {
-      setNotes(data);
+      // Ensure data is always an array
+      setNotes(Array.isArray(data) ? data : []);
+    } else {
+      // Reset to empty array if data is undefined/null
+      setNotes([]);
     }
   }, [data]);
 
@@ -98,13 +103,13 @@ export function useKnowledgeNotes() {
 
   // Get notes by type (client-side filter)
   const getNotesByType = (type: NoteType) => {
-    return notes.filter(note => note.type === type);
+    return notes?.filter(note => note.type === type);
   };
 
   // Search notes (client-side search)
   const searchNotes = (query: string) => {
     const lowerQuery = query.toLowerCase();
-    return notes.filter(
+    return notes?.filter(
       note =>
         note.title.toLowerCase().includes(lowerQuery) ||
         note.content.toLowerCase().includes(lowerQuery) ||
@@ -118,7 +123,7 @@ export function useKnowledgeNotes() {
   };
 
   return {
-    notes,
+    notes: Array.isArray(notes) ? notes : [],
     isLoading: isLoading || createNoteMutation.isPending || updateNoteMutation.isPending || deleteNoteMutation.isPending,
     error: error?.message,
     addNote,

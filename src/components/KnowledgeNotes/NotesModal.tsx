@@ -34,8 +34,11 @@ export function NotesModal({
   const [editingNote, setEditingNote] = useState<KnowledgeNote | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Ensure notes is always an array
+  const safeNotes = Array.isArray(notes) ? notes : [];
+
   // Filter notes by active tab
-  const filteredNotes = notes
+  const filteredNotes = safeNotes
     .filter((note) => note.type === activeTab)
     .filter((note) => {
       if (!searchQuery) return true;
@@ -49,9 +52,9 @@ export function NotesModal({
 
   // Get counts for each tab
   const counts = {
-    vocabulary: notes.filter((n) => n.type === 'vocabulary').length,
-    formula: notes.filter((n) => n.type === 'formula').length,
-    other: notes.filter((n) => n.type === 'other').length,
+    vocabulary: safeNotes.filter((n) => n.type === 'vocabulary').length,
+    formula: safeNotes.filter((n) => n.type === 'formula').length,
+    other: safeNotes.filter((n) => n.type === 'other').length,
   };
 
   const handleSubmit = async (data: NoteFormData) => {
