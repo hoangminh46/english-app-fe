@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import apiClient from "@/lib/axios";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { FormData, QuizResponse, ScrambleResponse } from "../types/quiz";
 import { LoadingOverlay } from "../components/LoadingOverlay";
 import { NavigationButtons } from "../components/NavigationButtons";
@@ -18,16 +18,14 @@ import { PracticeSelector } from "../components/quiz/PracticeSelector";
 import { ScrambleCustomizer } from "../components/quiz/ScrambleCustomizer";
 import { GrammarSelector } from "../components/quiz/GrammarSelector";
 import { getUserPreferences, saveAudience, saveLanguage } from "../utils/userPreferences";
+import { useAuth } from "@/contexts/AuthContext";
+import { authService } from "@/services/authService";
 // import { StepIndicator } from "@/components/StepIndicator";
-
-enum AppStep {
-  WELCOME = "welcome",
-  SETUP = "setup"
-}
 
 export default function Home() {
   const router = useRouter();
-  const [appStep, setAppStep] = useState<AppStep>(AppStep.WELCOME);
+  const searchParams = useSearchParams();
+  const { user, isAuthenticated, isLoading: authLoading, refreshUser } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState<FormData>({
     audience: "",
@@ -64,35 +62,81 @@ export default function Home() {
   // const totalSteps = 4; // Tổng số bước trong quy trình
 
   useEffect(() => {
-    // Load user preferences (audience and language)
-    const preferences = getUserPreferences();
-    if (preferences.audience || preferences.language) {
-      setFormData(prev => ({
-        ...prev,
-        audience: preferences.audience || prev.audience,
-        language: preferences.language || prev.language
-      }));
-      setScrambleFormData(prev => ({
-        ...prev,
-        audience: preferences.audience || prev.audience,
-        language: preferences.language || prev.language
-      }));
+    // Đợi auth loading xong
+    if (authLoading) return;
+
+    // Kiểm tra step từ URL query params
+    const stepParam = searchParams.get('step');
+    
+    // Nếu user đã đăng nhập
+    if (isAuthenticated && user) {
+      // Nếu user đã có audience, không được phép hiển thị màn "Bạn là ai" (step 1)
+      // Chỉ cho phép hiển thị step 1 nếu user chưa có audience
+      if (user.audience) {
+        // User đã có audience, không được phép hiển thị step 1
+        // Nếu có stepParam là 'audience', bỏ qua và chuyển sang step 2
+        if (stepParam === 'language') {
+          setCurrentStep(2);
+        } else {
+          // Luôn hiển thị từ step 2 trở đi nếu user đã có audience
+          setCurrentStep(2);
+        }
+      } else {
+        // User chưa có audience, có thể hiển thị step 1
+        if (stepParam === 'audience') {
+          setCurrentStep(1);
+        } else if (stepParam === 'language') {
+          setCurrentStep(2);
+        } else {
+          // Mặc định hiển thị step 1 khi user chưa có audience
+          setCurrentStep(1);
+        }
+      }
+
+      // Load audience từ user data
+      if (user.audience) {
+        setFormData(prev => ({
+          ...prev,
+          audience: user.audience || prev.audience,
+        }));
+        setScrambleFormData(prev => ({
+          ...prev,
+          audience: user.audience || prev.audience,
+        }));
+      }
+
+      // Load user preferences (audience and language) từ localStorage
+      const preferences = getUserPreferences();
+      if (preferences.audience || preferences.language) {
+        setFormData(prev => ({
+          ...prev,
+          audience: preferences.audience || prev.audience,
+          language: preferences.language || prev.language
+        }));
+        setScrambleFormData(prev => ({
+          ...prev,
+          audience: preferences.audience || prev.audience,
+          language: preferences.language || prev.language
+        }));
+      }
+
+      // Load saved progress state (chỉ khi đã đăng nhập)
+      const progessState = localStorage.getItem('progessState');
+      if (progessState) {
+        const state = JSON.parse(progessState);
+        setCurrentStep(state.currentStep);
+        setSelectedMode(state.selectedMode);
+        setSelectedPracticeType(state.selectedPracticeType);
+        // Clear the saved state after loading
+        localStorage.removeItem('progessState');
+      }
     }
 
-    const progessState = localStorage.getItem('progessState');
+    // Clean up old data
     const quizData = localStorage.getItem('quizData');
     const scrambleData = localStorage.getItem('scrambleData');
     const quizProgress = localStorage.getItem('quizProgress');
     const scrambleProgress = localStorage.getItem('scrambleProgress');
-    if (progessState) {
-      const state = JSON.parse(progessState);
-      setAppStep(AppStep.SETUP);
-      setCurrentStep(state.currentStep);
-      setSelectedMode(state.selectedMode);
-      setSelectedPracticeType(state.selectedPracticeType);
-      // Clear the saved state after loading
-      localStorage.removeItem('progessState');
-    }
     if(quizData){
       localStorage.removeItem('quizData');
     }
@@ -105,7 +149,7 @@ export default function Home() {
     if(scrambleProgress){
       localStorage.removeItem('scrambleProgress');
     }
-  }, []);
+  }, [authLoading, isAuthenticated, user, searchParams]);
 
   const generateQuizMutation = useMutation({
     mutationFn: async (data: FormData) => {
@@ -195,12 +239,25 @@ export default function Home() {
     console.error("Error generating scramble game:", error);
   };
 
-  const handleStartApp = () => {
-    setAppStep(AppStep.SETUP);
-  };
-
-  const handleNext = () => {
-    if (currentStep === 3) {
+  const handleNext = async () => {
+    if (currentStep === 1) {
+      // Từ step chọn audience, cần cập nhật audience lên backend trước khi chuyển sang step chọn ngôn ngữ
+      if (formData.audience && isAuthenticated) {
+        try {
+          await authService.updateAudience(formData.audience);
+          // Refresh user data trong context
+          await refreshUser();
+          // Chuyển sang step chọn ngôn ngữ sau khi cập nhật thành công
+          setCurrentStep(2);
+        } catch (error) {
+          console.error('Error updating audience:', error);
+          toast.error('Không thể cập nhật đối tượng. Vui lòng thử lại.');
+        }
+      } else {
+        // Nếu chưa chọn audience hoặc chưa đăng nhập, chỉ chuyển step
+        setCurrentStep(2);
+      }
+    } else if (currentStep === 3) {
       // At mode selection step
       if (selectedMode === 'practice') {
         setCurrentStep((prev) => prev + 1);
@@ -225,7 +282,15 @@ export default function Home() {
 
   const handleBack = () => {
     if (currentStep === 1) {
-      setAppStep(AppStep.WELCOME);
+      // Không cho quay lại từ step 1
+      return;
+    } else if (currentStep === 2) {
+      // Nếu đang ở step 2 và user đã có audience, không cho quay lại step 1
+      if (user?.audience) {
+        return;
+      }
+      // Nếu user chưa có audience, cho phép quay lại step 1
+      setCurrentStep(1);
     } else {
       setCurrentStep((prev) => prev - 1);
       // Reset selections when going back
@@ -244,6 +309,7 @@ export default function Home() {
     setScrambleFormData({ ...scrambleFormData, audience });
     // Save to localStorage
     saveAudience(audience);
+    // Không cập nhật lên backend ngay, sẽ cập nhật khi bấm "Tiếp tục"
   };
 
   const handleLanguageSelect = (language: string) => {
@@ -445,8 +511,28 @@ export default function Home() {
     }
   };
 
-  // Màn hình chào mừng
-  if (appStep === AppStep.WELCOME) {
+  // Đảm bảo nếu user đã có audience, không được ở step 1
+  useEffect(() => {
+    if (isAuthenticated && user?.audience && currentStep === 1) {
+      setCurrentStep(2);
+    }
+  }, [isAuthenticated, user, currentStep]);
+
+  // Hiển thị loading khi đang kiểm tra authentication
+  if (authLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="flex flex-col items-center gap-4">
+          <div className="w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full animate-spin"></div>
+          <p className="text-gray-600">Đang tải...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Màn hình chào mừng - chỉ hiển thị khi chưa đăng nhập
+  // Nếu đã đăng nhập, không được hiển thị màn chào mừng
+  if (!isAuthenticated) {
     return (
       <AnimatePresence mode="wait">
         <motion.div 
@@ -481,10 +567,10 @@ export default function Home() {
               whileTap={{ scale: 0.95 }}
             >
               <button
-                onClick={handleStartApp}
+                onClick={() => router.push('/auth/login')}
                 className="bg-white text-blue-600 px-8 py-3 rounded-lg font-medium text-lg shadow-lg hover:bg-gray-100 transition-colors"
               >
-                Bắt đầu ngay
+                Đăng nhập
               </button>
             </motion.div>
           </motion.div>
@@ -514,7 +600,7 @@ export default function Home() {
             variants={itemVariants}
           >
             <AnimatePresence mode="wait">
-              {currentStep === 1 && (
+              {currentStep === 1 && !user?.audience && (
                 <motion.div
                   key="audience"
                   initial={{ opacity: 0, x: 50 }}

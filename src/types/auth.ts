@@ -4,6 +4,11 @@ export interface User {
   name: string;
   picture?: string;
   googleId?: string;
+  firstName?: string;
+  lastName?: string;
+  audience: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 }
 
 export interface AuthResponse {

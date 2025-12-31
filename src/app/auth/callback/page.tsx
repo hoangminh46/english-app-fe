@@ -3,12 +3,14 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authService } from '@/services/authService';
+import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function CallbackPage() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const { reloadAuth } = useAuth();
   const [status, setStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [message, setMessage] = useState('Đang xử lý đăng nhập...');
 
@@ -29,20 +31,31 @@ export default function CallbackPage() {
         }
 
         // Xử lý callback với token
-        await authService.handleCallback(token);
+        const authResponse = await authService.handleCallback(token);
+        const user = authResponse.user;
+        
+        // Reload AuthContext để cập nhật state
+        await reloadAuth();
         
         setStatus('success');
         setMessage('Đăng nhập thành công!');
         toast.success('Đăng nhập thành công');
 
-        // Redirect về trang chủ sau 1 giây
+        // Kiểm tra audience và redirect phù hợp
         setTimeout(() => {
-          router.push('/');
-        }, 1000);
-      } catch (error: any) {
+          if (!user.audience) {
+            // Nếu user chưa có audience, chuyển đến màn hình chọn audience
+            router.push('/?step=audience');
+          } else {
+            // Nếu user đã có audience, chuyển đến màn hình chọn ngôn ngữ
+            router.push('/?step=language');
+          }
+        }, 500);
+      } catch (error) {
         console.error('Callback error:', error);
+        const errorMessage = error instanceof Error ? error.message : 'Đăng nhập thất bại. Vui lòng thử lại.';
         setStatus('error');
-        setMessage(error.message || 'Đăng nhập thất bại. Vui lòng thử lại.');
+        setMessage(errorMessage);
         toast.error('Đăng nhập thất bại');
 
         // Redirect về trang login sau 3 giây
@@ -53,7 +66,7 @@ export default function CallbackPage() {
     };
 
     handleCallback();
-  }, [searchParams, router]);
+  }, [searchParams, router, reloadAuth]);
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">

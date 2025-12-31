@@ -24,8 +24,8 @@ export const authService = {
       localStorage.setItem(AUTH_TOKEN_KEY, token);
 
       // Lấy thông tin user từ backend
-      const response = await apiClient.get<{ user: User }>('/api/auth/me');
-      const user = response.data.user;
+      const response = await apiClient.get<{ success: boolean; data: User }>('/api/auth/me');
+      const user = response.data.data;
 
       // Lưu user vào localStorage
       localStorage.setItem(AUTH_USER_KEY, JSON.stringify(user));
@@ -45,8 +45,21 @@ export const authService = {
    * Lấy thông tin user hiện tại từ backend
    */
   getCurrentUser: async (): Promise<User> => {
-    const response = await apiClient.get<{ user: User }>('/api/auth/me');
-    return response.data.user;
+    const response = await apiClient.get<{ success: boolean; data: User }>('/api/auth/me');
+    return response.data.data;
+  },
+
+  /**
+   * Cập nhật audience của user
+   */
+  updateAudience: async (audience: string): Promise<User> => {
+    // Gọi API PUT /api/auth/audience để cập nhật audience
+    const response = await apiClient.put<{ success: boolean; data: User }>('/api/auth/audience', { audience });
+    const updatedUser = response.data.data;
+    
+    // Update localStorage với user mới từ response
+    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(updatedUser));
+    return updatedUser;
   },
 
   /**

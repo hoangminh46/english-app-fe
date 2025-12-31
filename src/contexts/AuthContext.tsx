@@ -9,6 +9,7 @@ interface AuthContextType extends AuthState {
   login: () => void;
   logout: () => void;
   refreshUser: () => Promise<void>;
+  reloadAuth: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -86,6 +87,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   }, []);
 
+  const reloadAuth = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      const storedToken = authService.getToken();
+      const storedUser = authService.getUser();
+
+      if (storedToken && storedUser) {
+        setToken(storedToken);
+        setUser(storedUser);
+        
+        // Verify token với backend
+        try {
+          const currentUser = await authService.getCurrentUser();
+          setUser(currentUser);
+          localStorage.setItem('auth_user', JSON.stringify(currentUser));
+        } catch (error) {
+          // Token không hợp lệ, xóa và reset
+          authService.logout();
+          setToken(null);
+          setUser(null);
+        }
+      } else {
+        setToken(null);
+        setUser(null);
+      }
+    } catch (error) {
+      console.error('Error reloading auth:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
   const value: AuthContextType = {
     user,
     token,
@@ -94,6 +127,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     login,
     logout,
     refreshUser,
+    reloadAuth,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
