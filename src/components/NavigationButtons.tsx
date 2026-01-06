@@ -9,6 +9,7 @@ interface NavigationButtonsProps {
   onNext: () => void;
   onSubmit: () => void;
   mode?: 'quiz' | 'practice';
+  hideBackButton?: boolean;
 }
 
 export const NavigationButtons: React.FC<NavigationButtonsProps> = ({
@@ -19,7 +20,8 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({
   onBack,
   onNext,
   onSubmit,
-  mode
+  mode,
+  hideBackButton = false
 }) => {
   const isLastStep = currentStep === totalSteps;
 
@@ -30,19 +32,21 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({
   };
 
   return (
-    <div className="flex justify-between">
-      <button
-        type="button"
-        onClick={onBack}
-        disabled={currentStep === 1}
-        className={`px-6 py-2 rounded-lg shadow-sm transition-all ${
-          currentStep === 1
-            ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-            : "bg-white border border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300"
-        }`}
-      >
-        Quay lại
-      </button>
+    <div className={`flex ${hideBackButton ? 'justify-end' : 'justify-between'}`}>
+      {!hideBackButton && (
+        <button
+          type="button"
+          onClick={onBack}
+          disabled={currentStep === 1}
+          className={`px-6 py-2 rounded-lg shadow-sm transition-all ${
+            currentStep === 1
+              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
+              : "bg-white border border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300"
+          }`}
+        >
+          Quay lại
+        </button>
+      )}
       
       {isLastStep ? (
         <button

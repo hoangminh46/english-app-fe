@@ -7,19 +7,22 @@ import { useKnowledgeNotes } from '@/hooks/useKnowledgeNotes';
 
 export function KnowledgeNotesWidget() {
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const { notes, isLoading, addNote, updateNote, deleteNote } = useKnowledgeNotes();
+  const { notes, isLoading, addNote, updateNote, deleteNote } = useKnowledgeNotes(isModalOpen);
+
+  // Ensure notes is always an array
+  const safeNotes = Array.isArray(notes) ? notes : [];
 
   return (
     <>
       <FloatingNoteButton
         onClick={() => setIsModalOpen(true)}
-        noteCount={notes.length}
+        noteCount={safeNotes.length}
       />
       
       <NotesModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
-        notes={notes}
+        notes={safeNotes}
         isLoading={isLoading}
         onAddNote={addNote}
         onUpdateNote={updateNote}
