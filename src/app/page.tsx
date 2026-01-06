@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import apiClient from "@/lib/axios";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -20,9 +20,10 @@ import { GrammarSelector } from "../components/quiz/GrammarSelector";
 import { getUserPreferences, saveAudience, saveLanguage } from "../utils/userPreferences";
 import { useAuth } from "@/contexts/AuthContext";
 import { authService } from "@/services/authService";
+import { Loader2 } from "lucide-react";
 // import { StepIndicator } from "@/components/StepIndicator";
 
-export default function Home() {
+function HomeContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { user, isAuthenticated, isLoading: authLoading, refreshUser } = useAuth();
@@ -70,27 +71,40 @@ export default function Home() {
     
     // Nếu user đã đăng nhập
     if (isAuthenticated && user) {
-      // Nếu user đã có audience, không được phép hiển thị màn "Bạn là ai" (step 1)
-      // Chỉ cho phép hiển thị step 1 nếu user chưa có audience
-      if (user.audience) {
-        // User đã có audience, không được phép hiển thị step 1
-        // Nếu có stepParam là 'audience', bỏ qua và chuyển sang step 2
-        if (stepParam === 'language') {
+      // Xác định step ban đầu dựa trên audience và language
+      let initialStep = 1;
+      
+      if (user.audience && user.language) {
+        // User đã có cả audience và language, bắt đầu từ step 3 (chọn mode)
+        initialStep = 3;
+      } else if (user.audience) {
+        // User đã có audience nhưng chưa có language, bắt đầu từ step 2
+        initialStep = 2;
+      } else {
+        // User chưa có audience, bắt đầu từ step 1
+        initialStep = 1;
+      }
+
+      // Xử lý stepParam từ URL (override logic trên)
+      if (stepParam === 'audience') {
+        // Chỉ cho phép nếu user chưa có audience
+        if (!user.audience) {
+          setCurrentStep(1);
+        } else {
+          // Nếu đã có audience, bỏ qua và giữ step hiện tại
+          setCurrentStep(initialStep);
+        }
+      } else if (stepParam === 'language') {
+        // Chỉ cho phép nếu user chưa có language
+        if (!user.language) {
           setCurrentStep(2);
         } else {
-          // Luôn hiển thị từ step 2 trở đi nếu user đã có audience
-          setCurrentStep(2);
+          // Nếu đã có language, bỏ qua và giữ step hiện tại
+          setCurrentStep(initialStep);
         }
       } else {
-        // User chưa có audience, có thể hiển thị step 1
-        if (stepParam === 'audience') {
-          setCurrentStep(1);
-        } else if (stepParam === 'language') {
-          setCurrentStep(2);
-        } else {
-          // Mặc định hiển thị step 1 khi user chưa có audience
-          setCurrentStep(1);
-        }
+        // Không có stepParam, set step dựa trên logic ban đầu
+        setCurrentStep(initialStep);
       }
 
       // Load audience từ user data
@@ -102,6 +116,18 @@ export default function Home() {
         setScrambleFormData(prev => ({
           ...prev,
           audience: user.audience || prev.audience,
+        }));
+      }
+
+      // Load language từ user data
+      if (user.language) {
+        setFormData(prev => ({
+          ...prev,
+          language: user.language || prev.language,
+        }));
+        setScrambleFormData(prev => ({
+          ...prev,
+          language: user.language || prev.language,
         }));
       }
 
@@ -257,6 +283,23 @@ export default function Home() {
         // Nếu chưa chọn audience hoặc chưa đăng nhập, chỉ chuyển step
         setCurrentStep(2);
       }
+    } else if (currentStep === 2) {
+      // Từ step chọn ngôn ngữ, cần cập nhật language lên backend trước khi chuyển sang step chọn mode
+      if (formData.language && isAuthenticated) {
+        try {
+          await authService.updateLanguage(formData.language);
+          // Refresh user data trong context
+          await refreshUser();
+          // Chuyển sang step chọn mode sau khi cập nhật thành công
+          setCurrentStep(3);
+        } catch (error) {
+          console.error('Error updating language:', error);
+          toast.error('Không thể cập nhật ngôn ngữ. Vui lòng thử lại.');
+        }
+      } else {
+        // Nếu chưa chọn language hoặc chưa đăng nhập, chỉ chuyển step
+        setCurrentStep(3);
+      }
     } else if (currentStep === 3) {
       // At mode selection step
       if (selectedMode === 'practice') {
@@ -291,6 +334,13 @@ export default function Home() {
       }
       // Nếu user chưa có audience, cho phép quay lại step 1
       setCurrentStep(1);
+    } else if (currentStep === 3) {
+      // Nếu đang ở step 3 và user đã có language, không cho quay lại step 2
+      if (user?.language) {
+        return;
+      }
+      // Nếu user chưa có language, cho phép quay lại step 2
+      setCurrentStep(2);
     } else {
       setCurrentStep((prev) => prev - 1);
       // Reset selections when going back
@@ -513,8 +563,14 @@ export default function Home() {
 
   // Đảm bảo nếu user đã có audience, không được ở step 1
   useEffect(() => {
-    if (isAuthenticated && user?.audience && currentStep === 1) {
-      setCurrentStep(2);
+    if (isAuthenticated && user) {
+      if (user.audience && currentStep === 1) {
+        // User đã có audience nhưng đang ở step 1, chuyển sang step 2
+        setCurrentStep(2);
+      } else if (user.language && currentStep === 2) {
+        // User đã có language nhưng đang ở step 2, chuyển sang step 3
+        setCurrentStep(3);
+      }
     }
   }, [isAuthenticated, user, currentStep]);
 
@@ -615,7 +671,7 @@ export default function Home() {
                 </motion.div>
               )}
 
-              {currentStep === 2 && (
+              {currentStep === 2 && !user?.language && (
                 <motion.div
                   key="language"
                   initial={{ opacity: 0, x: 50 }}
@@ -740,10 +796,26 @@ export default function Home() {
               onNext={handleNext}
               onSubmit={handleSubmit}
               mode={selectedMode as 'quiz' | 'practice' | undefined}
+              hideBackButton={currentStep === 3 && !!user?.audience && !!user?.language}
             />
           </motion.div>
         </div>
       </motion.div>
     </AnimatePresence>
+  );
+}
+
+export default function Home() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+          <p className="text-gray-600">Đang tải...</p>
+        </div>
+      </div>
+    }>
+      <HomeContent />
+    </Suspense>
   );
 }

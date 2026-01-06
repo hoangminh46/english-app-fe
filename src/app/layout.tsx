@@ -4,6 +4,7 @@ import { QueryProvider } from "@/providers/QueryProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
 import { KnowledgeNotesWidget } from "@/components/KnowledgeNotes/KnowledgeNotesWidget";
+import { Header } from "@/components/layout/Header";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -33,6 +34,7 @@ export default function RootLayout({
       >
         <QueryProvider>
           <AuthProvider>
+            <Header />
             {children}
             <KnowledgeNotesWidget />
           </AuthProvider>

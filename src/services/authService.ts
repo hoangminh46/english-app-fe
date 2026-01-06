@@ -63,15 +63,48 @@ export const authService = {
   },
 
   /**
-   * Đăng xuất
+   * Cập nhật language của user
    */
-  logout: () => {
+  updateLanguage: async (language: string): Promise<User> => {
+    // Gọi API PUT /api/auth/language để cập nhật language
+    const response = await apiClient.put<{ success: boolean; data: User }>('/api/auth/language', { language });
+    const updatedUser = response.data.data;
+    
+    // Update localStorage với user mới từ response
+    localStorage.setItem(AUTH_USER_KEY, JSON.stringify(updatedUser));
+    return updatedUser;
+  },
+
+  /**
+   * Đăng xuất - gọi API logout và xóa tất cả data
+   */
+  logout: async () => {
+    try {
+      // Gọi API logout
+      await apiClient.post('/api/auth/logout');
+    } catch (error) {
+      console.error('Error calling logout API:', error);
+      // Tiếp tục xóa data dù API có lỗi
+    }
+    
+    // Xóa tất cả data của user trong localStorage
     localStorage.removeItem(AUTH_TOKEN_KEY);
     localStorage.removeItem(AUTH_USER_KEY);
-    // Redirect về trang login
-    if (typeof window !== 'undefined') {
-      window.location.href = '/auth/login';
-    }
+    
+    // Xóa tất cả các data khác liên quan đến user
+    const keysToRemove = [
+      'userPreferences',
+      'progessState',
+      'quizData',
+      'scrambleData',
+      'quizProgress',
+      'scrambleProgress',
+      'formData'
+    ];
+    
+    keysToRemove.forEach(key => {
+      localStorage.removeItem(key);
+    });
   },
 
   /**

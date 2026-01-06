@@ -7,6 +7,7 @@ export interface User {
   firstName?: string;
   lastName?: string;
   audience: string | null;
+  language: string | null;
   createdAt?: string;
   updatedAt?: string;
 }

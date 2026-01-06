@@ -1,13 +1,13 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { authService } from '@/services/authService';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2, CheckCircle2, XCircle } from 'lucide-react';
 import { toast } from 'sonner';
 
-export default function CallbackPage() {
+function CallbackContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { reloadAuth } = useAuth();
@@ -39,16 +39,18 @@ export default function CallbackPage() {
         
         setStatus('success');
         setMessage('Đăng nhập thành công!');
-        toast.success('Đăng nhập thành công');
 
-        // Kiểm tra audience và redirect phù hợp
+        // Kiểm tra audience và language để redirect phù hợp
         setTimeout(() => {
           if (!user.audience) {
             // Nếu user chưa có audience, chuyển đến màn hình chọn audience
             router.push('/?step=audience');
-          } else {
-            // Nếu user đã có audience, chuyển đến màn hình chọn ngôn ngữ
+          } else if (!user.language) {
+            // Nếu user đã có audience nhưng chưa có language, chuyển đến màn hình chọn ngôn ngữ
             router.push('/?step=language');
+          } else {
+            // Nếu user đã có cả audience và language, chuyển đến màn hình chọn mode (step 3)
+            router.push('/');
           }
         }, 500);
       } catch (error) {
@@ -104,3 +106,19 @@ export default function CallbackPage() {
   );
 }
 
+export default function CallbackPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100">
+        <div className="bg-white rounded-2xl shadow-xl p-8 max-w-md w-full mx-4">
+          <div className="flex flex-col items-center justify-center space-y-4">
+            <Loader2 className="w-12 h-12 animate-spin text-blue-600" />
+            <p className="text-gray-600 text-center">Đang tải...</p>
+          </div>
+        </div>
+      </div>
+    }>
+      <CallbackContent />
+    </Suspense>
+  );
+}

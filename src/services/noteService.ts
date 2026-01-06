@@ -61,8 +61,8 @@ export const getNotes = async (params?: {
     }
 
     throw new Error(response.data.error?.message || 'Failed to fetch notes');
-  } catch (error: any) {
-    if (error.response) {
+  } catch (error) {
+    if (axios.isAxiosError(error)) {
       throw new Error(error.response?.data?.error?.message || 'Failed to fetch notes');
     }
     throw error;

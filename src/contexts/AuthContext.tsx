@@ -7,7 +7,7 @@ import { toast } from 'sonner';
 
 interface AuthContextType extends AuthState {
   login: () => void;
-  logout: () => void;
+  logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
   reloadAuth: () => Promise<void>;
 }
@@ -48,7 +48,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             setUser(currentUser);
             // Update localStorage với user mới nhất
             localStorage.setItem('auth_user', JSON.stringify(currentUser));
-          } catch (error) {
+          } catch {
             // Token không hợp lệ, xóa và reset
             authService.logout();
             setToken(null);
@@ -69,11 +69,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     authService.loginWithGoogle();
   }, []);
 
-  const logout = useCallback(() => {
-    authService.logout();
-    setUser(null);
-    setToken(null);
-    toast.success('Đăng xuất thành công');
+  const logout = useCallback(async () => {
+    try {
+      await authService.logout();
+      setUser(null);
+      setToken(null);
+      toast.success('Đăng xuất thành công');
+    } catch (error) {
+      console.error('Error logging out:', error);
+      // Vẫn xóa state dù có lỗi
+      setUser(null);
+      setToken(null);
+    }
   }, []);
 
   const refreshUser = useCallback(async () => {
@@ -102,9 +109,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           const currentUser = await authService.getCurrentUser();
           setUser(currentUser);
           localStorage.setItem('auth_user', JSON.stringify(currentUser));
-        } catch (error) {
+        } catch {
           // Token không hợp lệ, xóa và reset
-          authService.logout();
+          await authService.logout();
           setToken(null);
           setUser(null);
         }
