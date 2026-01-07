@@ -13,22 +13,24 @@ interface NoteFormProps {
 
 export function NoteForm({ onSubmit, onCancel, editingNote, isSubmitting = false, defaultType = 'vocabulary' }: NoteFormProps) {
   const [formData, setFormData] = useState<NoteFormData>({
-    type: defaultType,
+    category: defaultType,
     title: '',
     content: '',
     example: '',
+    isLearned: false,
   });
 
   useEffect(() => {
     if (editingNote) {
       setFormData({
-        type: editingNote.type,
+        category: editingNote.category,
         title: editingNote.title,
         content: editingNote.content,
         example: editingNote.example || '',
+        isLearned: editingNote.isLearned,
       });
     } else {
-      setFormData(prev => ({ ...prev, type: defaultType }));
+      setFormData(prev => ({ ...prev, category: defaultType }));
     }
   }, [editingNote, defaultType]);
 
@@ -40,10 +42,11 @@ export function NoteForm({ onSubmit, onCancel, editingNote, isSubmitting = false
     
     // Reset form
     setFormData({
-      type: defaultType,
+      category: defaultType,
       title: '',
       content: '',
       example: '',
+      isLearned: false,
     });
   };
 
@@ -57,8 +60,8 @@ export function NoteForm({ onSubmit, onCancel, editingNote, isSubmitting = false
     <form onSubmit={handleSubmit} className="p-3 sm:p-4 border-t border-gray-200 bg-gray-50">
       <div className="mb-2.5 sm:mb-3">
         <select
-          value={formData.type}
-          onChange={(e) => setFormData({ ...formData, type: e.target.value as NoteType })}
+          value={formData.category}
+          onChange={(e) => setFormData({ ...formData, category: e.target.value as NoteType })}
           className="w-full p-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
           required
           disabled={!!editingNote}
@@ -102,6 +105,20 @@ export function NoteForm({ onSubmit, onCancel, editingNote, isSubmitting = false
           rows={2}
         />
       </div>
+
+      {editingNote && (
+        <div className="mb-2.5 sm:mb-3">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.isLearned}
+              onChange={(e) => setFormData({ ...formData, isLearned: e.target.checked })}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="text-sm sm:text-base text-gray-700">Đã học</span>
+          </label>
+        </div>
+      )}
 
       <div className="flex gap-2">
         <button

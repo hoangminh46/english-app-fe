@@ -14,9 +14,10 @@ interface NotesModalProps {
   onClose: () => void;
   notes: KnowledgeNote[];
   isLoading?: boolean;
-  onAddNote: (type: NoteType, data: NoteFormData) => Promise<void>;
-  onUpdateNote: (id: string, data: Partial<NoteFormData>) => Promise<void>;
-  onDeleteNote: (id: string) => Promise<void>;
+  onAddNote: (data: NoteFormData) => Promise<void>;
+  onUpdateNote: (category: NoteType, itemId: string, data: Partial<Omit<NoteFormData, 'category'>>) => Promise<void>;
+  onDeleteNote: (category: NoteType, itemId: string) => Promise<void>;
+  onToggleLearned: (category: NoteType, itemId: string) => Promise<void>;
 }
 
 export function NotesModal({
@@ -27,6 +28,7 @@ export function NotesModal({
   onAddNote,
   onUpdateNote,
   onDeleteNote,
+  onToggleLearned,
 }: NotesModalProps) {
   const [activeTab, setActiveTab] = useState<NoteType>('vocabulary');
   const [searchQuery, setSearchQuery] = useState('');
@@ -39,7 +41,7 @@ export function NotesModal({
 
   // Filter notes by active tab
   const filteredNotes = safeNotes
-    .filter((note) => note.type === activeTab)
+    .filter((note) => note.category === activeTab)
     .filter((note) => {
       if (!searchQuery) return true;
       const query = searchQuery.toLowerCase();
@@ -52,19 +54,20 @@ export function NotesModal({
 
   // Get counts for each tab
   const counts = {
-    vocabulary: safeNotes.filter((n) => n.type === 'vocabulary').length,
-    formula: safeNotes.filter((n) => n.type === 'formula').length,
-    other: safeNotes.filter((n) => n.type === 'other').length,
+    vocabulary: safeNotes.filter((n) => n.category === 'vocabulary').length,
+    formula: safeNotes.filter((n) => n.category === 'formula').length,
+    other: safeNotes.filter((n) => n.category === 'other').length,
   };
 
   const handleSubmit = async (data: NoteFormData) => {
     try {
       setIsSubmitting(true);
       if (editingNote) {
-        await onUpdateNote(editingNote.id, data);
+        const { category, ...updateData } = data;
+        await onUpdateNote(editingNote.category, editingNote._id, updateData);
         setEditingNote(null);
       } else {
-        await onAddNote(data.type, data);
+        await onAddNote(data);
       }
       setIsAddingNew(false);
     } catch (error) {
@@ -78,7 +81,7 @@ export function NotesModal({
   const handleEdit = (note: KnowledgeNote) => {
     setEditingNote(note);
     setIsAddingNew(true);
-    setActiveTab(note.type);
+    setActiveTab(note.category);
   };
 
   const handleCancel = () => {
@@ -86,11 +89,20 @@ export function NotesModal({
     setEditingNote(null);
   };
 
-  const handleDelete = async (id: string) => {
+  const handleDelete = async (category: NoteType, itemId: string) => {
     try {
-      await onDeleteNote(id);
+      await onDeleteNote(category, itemId);
     } catch (error) {
       console.error('Delete error:', error);
+      // Error is already shown by toast in the hook
+    }
+  };
+
+  const handleToggleLearned = async (category: NoteType, itemId: string) => {
+    try {
+      await onToggleLearned(category, itemId);
+    } catch (error) {
+      console.error('Toggle learned error:', error);
       // Error is already shown by toast in the hook
     }
   };
@@ -160,10 +172,11 @@ export function NotesModal({
               <div className="space-y-3">
                 {filteredNotes.map((note) => (
                   <NoteCard
-                    key={note.id}
+                    key={note._id}
                     note={note}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
+                    onToggleLearned={handleToggleLearned}
                   />
                 ))}
               </div>

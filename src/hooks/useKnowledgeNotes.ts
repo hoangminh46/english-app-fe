@@ -10,37 +10,43 @@ export function useKnowledgeNotes(enabled: boolean = false) {
   const queryClient = useQueryClient();
   const [notes, setNotes] = useState<KnowledgeNote[]>([]);
 
-  // Fetch notes from API - only when enabled (modal is open)
+  // Fetch all notes from API - only when enabled (modal is open)
   const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['notes'],
     queryFn: async () => {
-      return await noteService.getNotes();
+      const allNotesData = await noteService.getAllNotes();
+      return noteService.flattenAllNotes(allNotesData);
     },
     enabled, // Only fetch when enabled is true
     staleTime: 1000 * 60 * 5, // 5 minutes
   });
 
+  // Fetch stats
+  const { data: stats } = useQuery({
+    queryKey: ['notes-stats'],
+    queryFn: () => noteService.getNotesStats(),
+    enabled,
+    staleTime: 1000 * 60 * 5,
+  });
+
   // Update local state when data changes
   useEffect(() => {
     if (data) {
-      // Ensure data is always an array
       setNotes(Array.isArray(data) ? data : []);
     } else {
-      // Reset to empty array if data is undefined/null
       setNotes([]);
     }
   }, [data]);
 
   // Create note mutation
   const createNoteMutation = useMutation({
-    mutationFn: async ({ type, data }: { type: NoteType; data: NoteFormData }) => {
-      return await noteService.createNote(type, data);
+    mutationFn: async (data: NoteFormData) => {
+      return await noteService.createNote(data);
     },
-    onSuccess: (newNote) => {
-      // Update cache immediately for optimistic UI
-      queryClient.setQueryData(['notes'], (old: KnowledgeNote[] = []) => {
-        return [newNote, ...old];
-      });
+    onSuccess: () => {
+      // Invalidate queries to refetch latest data from server
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      queryClient.invalidateQueries({ queryKey: ['notes-stats'] });
       toast.success('Tạo ghi chú thành công!');
     },
     onError: (error: Error) => {
@@ -51,14 +57,21 @@ export function useKnowledgeNotes(enabled: boolean = false) {
 
   // Update note mutation
   const updateNoteMutation = useMutation({
-    mutationFn: async ({ id, data }: { id: string; data: Partial<NoteFormData> }) => {
-      return await noteService.updateNote(id, data);
+    mutationFn: async ({ 
+      category, 
+      itemId, 
+      data 
+    }: { 
+      category: NoteType; 
+      itemId: string; 
+      data: Partial<Omit<NoteFormData, 'category'>> 
+    }) => {
+      return await noteService.updateNote(category, itemId, data);
     },
-    onSuccess: (updatedNote) => {
-      // Update cache
-      queryClient.setQueryData(['notes'], (old: KnowledgeNote[] = []) => {
-        return old.map(note => note.id === updatedNote.id ? updatedNote : note);
-      });
+    onSuccess: () => {
+      // Invalidate queries to refetch latest data from server
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      queryClient.invalidateQueries({ queryKey: ['notes-stats'] });
       toast.success('Cập nhật ghi chú thành công!');
     },
     onError: (error: Error) => {
@@ -67,17 +80,37 @@ export function useKnowledgeNotes(enabled: boolean = false) {
     },
   });
 
+  // Toggle learned mutation
+  const toggleLearnedMutation = useMutation({
+    mutationFn: async ({ category, itemId }: { category: NoteType; itemId: string }) => {
+      return await noteService.toggleNoteLearned(category, itemId);
+    },
+    onSuccess: (updatedNote) => {
+      // Invalidate queries to refetch latest data from server
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      queryClient.invalidateQueries({ queryKey: ['notes-stats'] });
+      toast.success(
+        updatedNote.isLearned 
+          ? 'Đã đánh dấu đã học!' 
+          : 'Đã đánh dấu chưa học!'
+      );
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Cập nhật trạng thái thất bại');
+      console.error('Toggle learned error:', error);
+    },
+  });
+
   // Delete note mutation
   const deleteNoteMutation = useMutation({
-    mutationFn: async (id: string) => {
-      await noteService.deleteNote(id);
-      return id;
+    mutationFn: async ({ category, itemId }: { category: NoteType; itemId: string }) => {
+      await noteService.deleteNote(category, itemId);
+      return itemId;
     },
-    onSuccess: (deletedId) => {
-      // Update cache
-      queryClient.setQueryData(['notes'], (old: KnowledgeNote[] = []) => {
-        return old.filter(note => note.id !== deletedId);
-      });
+    onSuccess: () => {
+      // Invalidate queries to refetch latest data from server
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      queryClient.invalidateQueries({ queryKey: ['notes-stats'] });
       toast.success('Xóa ghi chú thành công!');
     },
     onError: (error: Error) => {
@@ -86,24 +119,56 @@ export function useKnowledgeNotes(enabled: boolean = false) {
     },
   });
 
+  // Create default notes mutation
+  const createDefaultMutation = useMutation({
+    mutationFn: async () => {
+      const allNotesData = await noteService.createDefaultNotes();
+      return noteService.flattenAllNotes(allNotesData);
+    },
+    onSuccess: () => {
+      // Invalidate queries to refetch latest data from server
+      queryClient.invalidateQueries({ queryKey: ['notes'] });
+      queryClient.invalidateQueries({ queryKey: ['notes-stats'] });
+      toast.success('Đã tạo ghi chú mặc định!');
+    },
+    onError: (error: Error) => {
+      toast.error(error.message || 'Tạo ghi chú mặc định thất bại');
+      console.error('Create default notes error:', error);
+    },
+  });
+
   // Add a new note
-  const addNote = async (type: NoteType, data: NoteFormData) => {
-    await createNoteMutation.mutateAsync({ type, data });
+  const addNote = async (data: NoteFormData) => {
+    await createNoteMutation.mutateAsync(data);
   };
 
   // Update an existing note
-  const updateNote = async (id: string, data: Partial<NoteFormData>) => {
-    await updateNoteMutation.mutateAsync({ id, data });
+  const updateNote = async (
+    category: NoteType,
+    itemId: string,
+    data: Partial<Omit<NoteFormData, 'category'>>
+  ) => {
+    await updateNoteMutation.mutateAsync({ category, itemId, data });
+  };
+
+  // Toggle learned status
+  const toggleLearned = async (category: NoteType, itemId: string) => {
+    await toggleLearnedMutation.mutateAsync({ category, itemId });
   };
 
   // Delete a note
-  const deleteNote = async (id: string) => {
-    await deleteNoteMutation.mutateAsync(id);
+  const deleteNote = async (category: NoteType, itemId: string) => {
+    await deleteNoteMutation.mutateAsync({ category, itemId });
   };
 
-  // Get notes by type (client-side filter)
-  const getNotesByType = (type: NoteType) => {
-    return notes?.filter(note => note.type === type);
+  // Create default notes
+  const createDefault = async () => {
+    await createDefaultMutation.mutateAsync();
+  };
+
+  // Get notes by category (client-side filter)
+  const getNotesByCategory = (category: NoteType) => {
+    return notes?.filter(note => note.category === category);
   };
 
   // Search notes (client-side search)
@@ -117,6 +182,11 @@ export function useKnowledgeNotes(enabled: boolean = false) {
     );
   };
 
+  // Filter by learned status
+  const filterByLearned = (isLearned: boolean) => {
+    return notes?.filter(note => note.isLearned === isLearned);
+  };
+
   // Refresh notes from server
   const refreshNotes = () => {
     refetch();
@@ -124,14 +194,22 @@ export function useKnowledgeNotes(enabled: boolean = false) {
 
   return {
     notes: Array.isArray(notes) ? notes : [],
-    isLoading: isLoading || createNoteMutation.isPending || updateNoteMutation.isPending || deleteNoteMutation.isPending,
+    stats,
+    isLoading: isLoading || 
+               createNoteMutation.isPending || 
+               updateNoteMutation.isPending || 
+               deleteNoteMutation.isPending ||
+               toggleLearnedMutation.isPending ||
+               createDefaultMutation.isPending,
     error: error?.message,
     addNote,
     updateNote,
+    toggleLearned,
     deleteNote,
-    getNotesByType,
+    createDefault,
+    getNotesByCategory,
     searchNotes,
+    filterByLearned,
     refreshNotes,
   };
 }
-
