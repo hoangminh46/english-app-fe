@@ -6,6 +6,8 @@ export { FloatingNoteButton } from './FloatingNoteButton';
 export { NotesModal } from './NotesModal';
 export { NoteCard } from './NoteCard';
 export { NoteForm } from './NoteForm';
+export { NoteFormModal } from './NoteFormModal';
+export { ConfirmModal } from './ConfirmModal';
 export { TabNavigation } from './TabNavigation';
 export { EmptyState } from './EmptyState';
 

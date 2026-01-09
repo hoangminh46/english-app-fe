@@ -1,6 +1,7 @@
 import React from 'react';
 import { languages } from '../../types/quiz';
 import Image from 'next/image';
+import { Button } from '@/components/ui/Button';
 
 type LanguageInfo = {
   [key: string]: {
@@ -54,11 +55,13 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
         {languages.map((language) => (
-          <button
+          <Button
             key={language.value}
             type="button"
+            variant="ghost"
+            size="none"
             disabled={!languageInfo[language.value].isSupported}
-            className={`group p-4 sm:p-6 border-2 rounded-xl transition-all duration-300 hover:scale-[1.02] ${
+            className={`h-auto group p-4 sm:p-6 border-2 rounded-xl transition-all duration-300 hover:scale-[1.02] ${
               selectedLanguage === language.value
                 ? "border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg"
                 : languageInfo[language.value].isSupported
@@ -87,7 +90,7 @@ export const LanguageSelector: React.FC<LanguageSelectorProps> = ({
                 </p>
               </div>
             </div>
-          </button>
+          </Button>
         ))}
       </div>
     </div>

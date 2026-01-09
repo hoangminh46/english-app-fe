@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from './ui/Button';
 
 interface NavigationButtonsProps {
   currentStep: number;
@@ -26,54 +27,43 @@ export const NavigationButtons: React.FC<NavigationButtonsProps> = ({
   const isLastStep = currentStep === totalSteps;
 
   const getSubmitButtonText = () => {
-    if (isSubmitting) return 'Đang tạo...';
     if (mode === 'practice') return 'Tạo trò chơi';
     return 'Tạo bộ câu hỏi';
   };
 
   return (
-    <div className={`flex ${hideBackButton ? 'justify-end' : 'justify-between'}`}>
+    <div className={`flex gap-3 ${hideBackButton ? 'justify-end' : 'justify-between'}`}>
       {!hideBackButton && (
-        <button
+        <Button
           type="button"
           onClick={onBack}
           disabled={currentStep === 1}
-          className={`px-6 py-2 rounded-lg shadow-sm transition-all ${
-            currentStep === 1
-              ? "bg-gray-200 text-gray-400 cursor-not-allowed"
-              : "bg-white border border-blue-200 text-blue-600 hover:bg-blue-50 hover:border-blue-300"
-          }`}
+          variant="outline"
+          className="px-6"
         >
           Quay lại
-        </button>
+        </Button>
       )}
       
       {isLastStep ? (
-        <button
+        <Button
           type="button"
           onClick={onSubmit}
-          disabled={!canGoNext || isSubmitting}
-          className={`px-6 py-2 rounded-lg shadow-sm transition-all ${
-            !canGoNext || isSubmitting
-              ? "bg-blue-300 text-white cursor-not-allowed"
-              : "bg-gradient-to-r from-blue-400 to-blue-600 text-white hover:from-blue-500 hover:to-blue-700 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-          }`}
+          disabled={!canGoNext}
+          isLoading={isSubmitting}
+          className="px-6"
         >
           {getSubmitButtonText()}
-        </button>
+        </Button>
       ) : (
-        <button
+        <Button
           type="button"
           onClick={onNext}
           disabled={!canGoNext}
-          className={`px-6 py-2 rounded-lg shadow-sm transition-all ${
-            !canGoNext
-              ? "bg-blue-300 text-white cursor-not-allowed"
-              : "bg-gradient-to-r from-blue-400 to-blue-600 text-white hover:from-blue-500 hover:to-blue-700 shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-          }`}
+          className="px-6"
         >
           Tiếp theo
-        </button>
+        </Button>
       )}
     </div>
   );

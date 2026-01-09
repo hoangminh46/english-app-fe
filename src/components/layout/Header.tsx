@@ -37,9 +37,9 @@ export const Header = () => {
              <span className="text-sm font-medium text-gray-700">
                 Xin chào, {user?.firstName || user?.name?.split(' ').pop()}!
              </span>
-             <button
+             <div
                 onClick={handleAvatarClick}
-                className="relative h-10 w-10 overflow-hidden rounded-full border-2 border-white ring-2 ring-gray-100 shadow-sm transition-transform hover:scale-105 cursor-pointer focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="relative h-10 w-10 overflow-hidden rounded-full border-2 border-white ring-2 ring-blue-50 shadow-md cursor-pointer transition-transform hover:scale-110 active:scale-95"
              >
                 {user?.picture && !imageError ? (
                     <img
@@ -54,7 +54,7 @@ export const Header = () => {
                         {user?.name?.charAt(0).toUpperCase() || user?.firstName?.charAt(0).toUpperCase() || 'U'}
                     </div>
                 )}
-             </button>
+             </div>
           </div>
         </div>
       </div>

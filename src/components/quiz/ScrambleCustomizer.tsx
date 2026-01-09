@@ -1,5 +1,5 @@
-import React from 'react';
 import { FormData, difficulties } from '@/types/quiz';
+import { Button } from '@/components/ui/Button';
 
 interface ScrambleCustomizerProps {
   formData: FormData;
@@ -61,20 +61,16 @@ export const ScrambleCustomizer: React.FC<ScrambleCustomizerProps> = ({
               (topic.value !== 'Random Topic' && isRandomSelected));
 
             return (
-              <button
+              <Button
                 key={topic.value}
                 onClick={() => onTopicToggle(topic.value)}
                 disabled={isDisabled}
-                className={`p-3 rounded-lg text-sm font-medium transition-colors
-                  ${isSelected
-                    ? 'bg-blue-600 text-white'
-                    : isDisabled
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                variant={isSelected ? 'primary' : 'gray'}
+                size="sm"
+                className="h-11"
               >
                 {topic.label}
-              </button>
+              </Button>
             );
           })}
         </div>
@@ -85,17 +81,15 @@ export const ScrambleCustomizer: React.FC<ScrambleCustomizerProps> = ({
         <h3 className="text-lg font-semibold text-gray-800">Độ khó</h3>
         <div className="grid grid-cols-3 gap-3">
           {difficulties.map((difficulty) => (
-            <button
+            <Button
               key={difficulty.value}
               onClick={() => onDifficultyChange(difficulty.value)}
-              className={`p-3 rounded-lg text-sm font-medium transition-colors
-                ${formData.difficulty === difficulty.value
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+              variant={formData.difficulty === difficulty.value ? 'primary' : 'gray'}
+              size="sm"
+              className="h-11"
             >
               {difficulty.label}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -105,17 +99,15 @@ export const ScrambleCustomizer: React.FC<ScrambleCustomizerProps> = ({
         <h3 className="text-lg font-semibold text-gray-800">Số lượng từ</h3>
         <div className="grid grid-cols-4 gap-3">
           {[5, 10, 15, 20].map((quantity) => (
-            <button
+            <Button
               key={quantity}
               onClick={() => onQuantityChange(quantity)}
-              className={`p-3 rounded-lg text-sm font-medium transition-colors
-                ${formData.quantity === quantity
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+              variant={formData.quantity === quantity ? 'primary' : 'gray'}
+              size="sm"
+              className="h-11"
             >
               {quantity}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -125,17 +117,15 @@ export const ScrambleCustomizer: React.FC<ScrambleCustomizerProps> = ({
         <h3 className="text-lg font-semibold text-gray-800">Thời gian trả lời (giây)</h3>
         <div className="grid grid-cols-4 gap-3">
           {[20, 25, 30, 45].map((seconds) => (
-            <button
+            <Button
               key={seconds}
               onClick={() => onTimerChange(seconds)}
-              className={`p-3 rounded-lg text-sm font-medium transition-colors
-                ${formData.timer === seconds
-                  ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+              variant={formData.timer === seconds ? 'primary' : 'gray'}
+              size="sm"
+              className="h-11"
             >
               {seconds}
-            </button>
+            </Button>
           ))}
         </div>
       </div>

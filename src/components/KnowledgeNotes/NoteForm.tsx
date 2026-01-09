@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { NoteFormData, KnowledgeNote, NoteType } from '../../types/notes';
+import { Button } from '../ui/Button';
 
 interface NoteFormProps {
   onSubmit: (data: NoteFormData) => void | Promise<void>;
@@ -13,22 +14,24 @@ interface NoteFormProps {
 
 export function NoteForm({ onSubmit, onCancel, editingNote, isSubmitting = false, defaultType = 'vocabulary' }: NoteFormProps) {
   const [formData, setFormData] = useState<NoteFormData>({
-    type: defaultType,
+    category: defaultType,
     title: '',
     content: '',
     example: '',
+    isLearned: false,
   });
 
   useEffect(() => {
     if (editingNote) {
       setFormData({
-        type: editingNote.type,
+        category: editingNote.category,
         title: editingNote.title,
         content: editingNote.content,
         example: editingNote.example || '',
+        isLearned: editingNote.isLearned,
       });
     } else {
-      setFormData(prev => ({ ...prev, type: defaultType }));
+      setFormData(prev => ({ ...prev, category: defaultType }));
     }
   }, [editingNote, defaultType]);
 
@@ -40,10 +43,11 @@ export function NoteForm({ onSubmit, onCancel, editingNote, isSubmitting = false
     
     // Reset form
     setFormData({
-      type: defaultType,
+      category: defaultType,
       title: '',
       content: '',
       example: '',
+      isLearned: false,
     });
   };
 
@@ -54,11 +58,11 @@ export function NoteForm({ onSubmit, onCancel, editingNote, isSubmitting = false
   ];
 
   return (
-    <form onSubmit={handleSubmit} className="p-3 sm:p-4 border-t border-gray-200 bg-gray-50">
+    <form onSubmit={handleSubmit} className="space-y-3">
       <div className="mb-2.5 sm:mb-3">
         <select
-          value={formData.type}
-          onChange={(e) => setFormData({ ...formData, type: e.target.value as NoteType })}
+          value={formData.category}
+          onChange={(e) => setFormData({ ...formData, category: e.target.value as NoteType })}
           className="w-full p-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
           required
           disabled={!!editingNote}
@@ -103,22 +107,37 @@ export function NoteForm({ onSubmit, onCancel, editingNote, isSubmitting = false
         />
       </div>
 
+      {editingNote && (
+        <div className="mb-2.5 sm:mb-3">
+          <label className="flex items-center gap-2 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={formData.isLearned}
+              onChange={(e) => setFormData({ ...formData, isLearned: e.target.checked })}
+              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+            />
+            <span className="text-sm sm:text-base text-gray-700">Đã học</span>
+          </label>
+        </div>
+      )}
+
       <div className="flex gap-2">
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="flex-1 px-3 sm:px-4 py-2 text-sm sm:text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isSubmitting ? 'Đang xử lý...' : (editingNote ? 'Cập nhật' : 'Lưu')}
-        </button>
-        <button
+        <Button
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="flex-1 px-3 sm:px-4 py-2 text-sm sm:text-base bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          variant="gray"
+          fullWidth
         >
           Hủy
-        </button>
+        </Button>
+        <Button
+          type="submit"
+          isLoading={isSubmitting}
+          fullWidth
+        >
+          {editingNote ? 'Cập nhật' : 'Lưu'}
+        </Button>
       </div>
     </form>
   );

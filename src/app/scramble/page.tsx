@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { ScrambleWord, ScrambleResponse, FormData, ScrambleProgress } from '@/types/quiz';
 import { GameComplete } from '@/components/scramble/GameComplete';
 import { useRouter } from 'next/navigation';
+import { Button } from '@/components/ui/Button';
 
 export default function ScramblePage() {
   const router = useRouter();
@@ -46,7 +47,7 @@ export default function ScramblePage() {
     } else {
       router.push('/');
     }
-  }, []);
+  }, [router]);
 
   // Lưu tiến độ mỗi khi có thay đổi
   useEffect(() => {
@@ -170,12 +171,13 @@ export default function ScramblePage() {
           <p className="text-blue-600 mb-6">
             Vui lòng quay lại trang chủ để bắt đầu trò chơi mới.
           </p>
-          <button
+          <Button
             onClick={() => router.push('/')}
-            className="px-6 py-3 bg-gradient-to-r from-blue-500 to-blue-600 text-white font-semibold rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"
+            size="lg"
+            className="px-8"
           >
             Về trang chủ
-          </button>
+          </Button>
         </div>
       </div>
     );
@@ -219,13 +221,13 @@ export default function ScramblePage() {
             {/* Hint Section */}
             <div className="mb-6 text-center">
               {!showHint && (
-                <button
+                <Button
                   onClick={() => setShowHint(true)}
-                  className="text-sm font-medium px-4 py-2 rounded-lg transition-all duration-200 bg-blue-500 text-white hover:bg-blue-600"
+                  size="sm"
                   disabled={isCorrect || showAnswer}
                 >
                   Hiện gợi ý
-                </button>
+                </Button>
               )}
               {showHint && (
                 <div className="p-4 bg-gradient-to-r from-emerald-50 to-green-50 border-2 border-emerald-300 rounded-xl shadow-lg">
@@ -248,17 +250,14 @@ export default function ScramblePage() {
             <div className="mb-8">
               <div className="flex justify-between items-center mb-4">
                 <h3 className="text-lg font-bold text-blue-800">Đáp án của bạn</h3>
-                <button
+                <Button
                   onClick={handleReset}
+                  variant="secondary"
+                  size="sm"
                   disabled={isCorrect || showAnswer}
-                  className={`text-sm px-4 py-2 rounded-xl font-semibold transition-all duration-200 shadow-md hover:shadow-lg transform hover:-translate-y-0.5 ${
-                    isCorrect || showAnswer
-                      ? 'bg-gray-200 text-gray-500 cursor-not-allowed' 
-                      : 'bg-gradient-to-r from-yellow-500 to-orange-500 text-white hover:from-yellow-600 hover:to-orange-600'
-                  }`}
                 >
                   Đặt lại
-                </button>
+                </Button>
               </div>
               <div className="flex justify-center gap-1.5 flex-wrap">
                 {Array.from({ length: words[currentWordIndex].word.length }).map((_, index) => {
@@ -402,12 +401,14 @@ export default function ScramblePage() {
             {/* Next Button */}
             {(isCorrect || showAnswer) && (
               <div className="mt-8 flex justify-center">
-                <button
+                <Button
                   onClick={handleNext}
-                  className="w-full sm:w-auto px-8 py-4 rounded-xl font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 active:translate-y-0 bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700"
+                  size="xl"
+                  fullWidth
+                  className="sm:w-auto px-12"
                 >
                   {currentWordIndex < words.length - 1 ? 'Tiếp tục' : 'Kết thúc'}
-                </button>
+                </Button>
               </div>
             )}
           </div>
