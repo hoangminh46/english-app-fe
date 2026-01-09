@@ -1,5 +1,5 @@
 import React from 'react';
-
+import { Button } from '@/components/ui/Button';
 type QuizTypeSelectorProps = {
   onSelectQuizType: (type: 'quick' | 'custom') => void;
   selectedType: 'quick' | 'custom' | null;
@@ -21,9 +21,11 @@ export const QuizTypeSelector: React.FC<QuizTypeSelectorProps> = ({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-        <button
+        <Button
           onClick={() => onSelectQuizType('quick')}
-          className={`group p-4 sm:p-6 border-2 rounded-xl transition-all duration-300 hover:scale-[1.02] ${
+          variant="ghost"
+          size="none"
+          className={`h-auto group p-4 sm:p-6 border-2 rounded-xl transition-all duration-300 hover:scale-[1.02] ${
             selectedType === 'quick'
               ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg'
               : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'
@@ -48,11 +50,13 @@ export const QuizTypeSelector: React.FC<QuizTypeSelectorProps> = ({
               </p>
             </div>
           </div>
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={() => onSelectQuizType('custom')}
-          className={`group p-4 sm:p-6 border-2 rounded-xl transition-all duration-300 hover:scale-[1.02] ${
+          variant="ghost"
+          size="none"
+          className={`h-auto group p-4 sm:p-6 border-2 rounded-xl transition-all duration-300 hover:scale-[1.02] ${
             selectedType === 'custom'
               ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg'
               : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'
@@ -77,7 +81,7 @@ export const QuizTypeSelector: React.FC<QuizTypeSelectorProps> = ({
               </p>
             </div>
           </div>
-        </button>
+        </Button>
       </div>
     </div>
   );

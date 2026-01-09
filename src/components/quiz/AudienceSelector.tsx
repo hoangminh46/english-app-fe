@@ -6,6 +6,7 @@ import {
   BriefcaseIcon,
   HeartIcon
 } from '@heroicons/react/24/outline';
+import { Button } from '../ui/Button';
 
 type AudienceInfo = {
   [key: string]: {
@@ -53,10 +54,12 @@ export const AudienceSelector: React.FC<AudienceSelectorProps> = ({
         {audiences.map((audience) => {
           const AudienceIcon = audienceInfo[audience.value].icon;
           return (
-            <button
+            <Button
               key={audience.value}
               type="button"
-              className={`group p-4 sm:p-6 border-2 rounded-xl transition-all duration-300 hover:scale-[1.02] ${
+              variant="ghost"
+              size="none"
+              className={`h-auto group p-4 sm:p-6 border-2 rounded-xl transition-all duration-300 hover:scale-[1.02] ${
                 selectedAudience === audience.value
                   ? "border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg"
                   : "border-gray-200 hover:border-blue-300 hover:bg-blue-50/50"
@@ -82,7 +85,7 @@ export const AudienceSelector: React.FC<AudienceSelectorProps> = ({
                   </p>
                 </div>
               </div>
-            </button>
+            </Button>
           );
         })}
       </div>

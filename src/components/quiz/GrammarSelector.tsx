@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { grammarCategories } from '../../data/grammarData';
+import { Button } from '@/components/ui/Button';
 
 type GrammarSelectorProps = {
   onSelectTopic?: (categoryId: string, subcategoryId: string, topicId: string) => void;
@@ -54,10 +55,11 @@ export const GrammarSelector: React.FC<GrammarSelectorProps> = ({ onSelectTopic,
         {grammarCategories.map((category) => (
           <div key={category.id} className="border-2 border-gray-200 rounded-xl overflow-hidden">
             {/* Category Header */}
-            <button
+            <Button
               onClick={() => toggleCategory(category.id)}
+              variant="ghost"
               className="w-full p-4 flex items-center justify-between bg-white hover:bg-blue-50 
-                       transition-colors duration-200 text-left"
+                       transition-colors duration-200 text-left rounded-none border-0"
             >
               <div className="flex-1">
                 <h3 className="text-lg font-semibold text-gray-800">
@@ -78,7 +80,7 @@ export const GrammarSelector: React.FC<GrammarSelectorProps> = ({ onSelectTopic,
               >
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
               </motion.svg>
-            </button>
+            </Button>
 
             {/* Subcategories */}
             <AnimatePresence>
@@ -99,10 +101,11 @@ export const GrammarSelector: React.FC<GrammarSelectorProps> = ({ onSelectTopic,
                       className="border-b border-gray-200 last:border-b-0"
                     >
                       {/* Subcategory Header */}
-                      <button
+                      <Button
                         onClick={() => toggleSubcategory(subcategory.id)}
+                        variant="ghost"
                         className="w-full p-4 pl-8 flex items-center justify-between bg-gray-50 
-                                 hover:bg-blue-50 transition-colors duration-200 text-left"
+                                 hover:bg-blue-50 transition-colors duration-200 text-left rounded-none border-0"
                       >
                         <div className="flex-1">
                           <h4 className="text-base font-semibold text-gray-800">
@@ -123,7 +126,7 @@ export const GrammarSelector: React.FC<GrammarSelectorProps> = ({ onSelectTopic,
                         >
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                         </motion.svg>
-                      </button>
+                      </Button>
 
                       {/* Topics */}
                       <AnimatePresence>
@@ -135,17 +138,15 @@ export const GrammarSelector: React.FC<GrammarSelectorProps> = ({ onSelectTopic,
                             transition={{ duration: 0.25, ease: "easeInOut" }}
                             className="bg-white overflow-hidden"
                           >
-                            {subcategory.topics.map((topic, topicIndex) => {
+                            {subcategory.topics.map((topic) => {
                               const isSelected = isTopicSelected(topic.id);
                               return (
-                                <motion.button
+                                <Button
                                   key={topic.id}
-                                  initial={{ opacity: 0, x: -10 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  transition={{ duration: 0.2, delay: topicIndex * 0.03 }}
                                   onClick={() => handleTopicClick(category.id, subcategory.id, topic.id)}
+                                  variant="ghost"
                                   className={`w-full p-4 pl-12 text-left transition-all duration-200 
-                                           border-b border-l-4 last:border-b-0 group relative
+                                           border-b border-l-4 last:border-b-0 group relative rounded-none
                                            ${isSelected 
                                              ? 'bg-blue-50 border-blue-200 border-l-blue-500' 
                                              : 'border-gray-100 border-l-transparent hover:bg-blue-50 hover:border-l-blue-300'
@@ -165,7 +166,7 @@ export const GrammarSelector: React.FC<GrammarSelectorProps> = ({ onSelectTopic,
                                              }`}>
                                     {topic.description}
                                   </p>
-                                </motion.button>
+                                </Button>
                               );
                             })}
                           </motion.div>

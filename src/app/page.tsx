@@ -21,6 +21,7 @@ import { getUserPreferences, saveAudience, saveLanguage } from "../utils/userPre
 import { useAuth } from "@/contexts/AuthContext";
 import { authService } from "@/services/authService";
 import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/Button";
 // import { StepIndicator } from "@/components/StepIndicator";
 
 function HomeContent() {
@@ -622,12 +623,14 @@ function HomeContent() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
             >
-              <button
+              <Button
                 onClick={() => router.push('/auth/login')}
-                className="bg-white text-blue-600 px-8 py-3 rounded-lg font-medium text-lg shadow-lg hover:bg-gray-100 transition-colors"
+                variant="ghost"
+                size="lg"
+                className="bg-white text-blue-600 hover:bg-gray-100 px-8"
               >
                 Đăng nhập
-              </button>
+              </Button>
             </motion.div>
           </motion.div>
         </motion.div>

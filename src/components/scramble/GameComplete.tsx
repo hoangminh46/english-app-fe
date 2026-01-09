@@ -1,5 +1,6 @@
 import React from 'react';
 import { useRouter } from 'next/navigation';
+import { Button } from '../ui/Button';
 
 interface GameCompleteProps {
   score: number;
@@ -65,18 +66,21 @@ export const GameComplete: React.FC<GameCompleteProps> = ({ score, totalWords })
 
             {/* Action Buttons */}
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <button
+              <Button
                 onClick={handlePlayAgain}
-                className="px-6 py-3 bg-blue-600 text-white font-medium rounded-xl hover:bg-blue-700 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                size="lg"
+                className="px-8"
               >
                 Chơi lại
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={handleGoHome}
-                className="px-6 py-3 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
+                variant="gray"
+                size="lg"
+                className="px-8"
               >
                 Về trang chủ
-              </button>
+              </Button>
             </div>
           </div>
         </div>

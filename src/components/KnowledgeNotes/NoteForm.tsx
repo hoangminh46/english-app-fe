@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { NoteFormData, KnowledgeNote, NoteType } from '../../types/notes';
+import { Button } from '../ui/Button';
 
 interface NoteFormProps {
   onSubmit: (data: NoteFormData) => void | Promise<void>;
@@ -57,7 +58,7 @@ export function NoteForm({ onSubmit, onCancel, editingNote, isSubmitting = false
   ];
 
   return (
-    <form onSubmit={handleSubmit} className="p-3 sm:p-4 border-t border-gray-200 bg-gray-50">
+    <form onSubmit={handleSubmit} className="space-y-3">
       <div className="mb-2.5 sm:mb-3">
         <select
           value={formData.category}
@@ -121,21 +122,22 @@ export function NoteForm({ onSubmit, onCancel, editingNote, isSubmitting = false
       )}
 
       <div className="flex gap-2">
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="flex-1 px-3 sm:px-4 py-2 text-sm sm:text-base bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-        >
-          {isSubmitting ? 'Đang xử lý...' : (editingNote ? 'Cập nhật' : 'Lưu')}
-        </button>
-        <button
+        <Button
           type="button"
           onClick={onCancel}
           disabled={isSubmitting}
-          className="flex-1 px-3 sm:px-4 py-2 text-sm sm:text-base bg-gray-300 text-gray-700 rounded-lg hover:bg-gray-400 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+          variant="gray"
+          fullWidth
         >
           Hủy
-        </button>
+        </Button>
+        <Button
+          type="submit"
+          isLoading={isSubmitting}
+          fullWidth
+        >
+          {editingNote ? 'Cập nhật' : 'Lưu'}
+        </Button>
       </div>
     </form>
   );

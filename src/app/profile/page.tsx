@@ -9,6 +9,7 @@ import { authService } from '@/services/authService';
 import { toast } from 'sonner';
 import { LogOut, Globe } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { Button } from '@/components/ui/Button';
 
 const languageInfo: {
   [key: string]: {
@@ -158,10 +159,11 @@ export default function ProfilePage() {
           <div className="space-y-3 sm:space-y-4">
             {/* Button Đổi Ngôn Ngữ */}
             <div className="relative" ref={languageSelectRef}>
-              <button
+              <Button
                 onClick={() => setShowLanguageSelect(!showLanguageSelect)}
-                disabled={isChangingLanguage}
-                className="w-full flex items-center justify-between px-4 sm:px-6 py-3 sm:py-4 bg-blue-50 border-2 border-blue-200 rounded-lg sm:rounded-xl hover:border-blue-300 hover:bg-blue-100 active:bg-blue-100 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+                isLoading={isChangingLanguage}
+                variant="outline"
+                className="w-full justify-between bg-blue-50 border-blue-200 hover:border-blue-300 hover:bg-blue-100 p-4 sm:p-6"
               >
                 <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                   <Globe className="w-4 h-4 sm:w-5 sm:h-5 text-blue-600 flex-shrink-0" />
@@ -179,12 +181,12 @@ export default function ProfilePage() {
                         className="object-cover rounded-full"
                       />
                     </div>
-                    <span className="text-xs sm:text-sm text-gray-600 hidden sm:inline">
+                    <span className="text-xs sm:text-sm text-gray-600 hidden sm:inline font-normal">
                       {languages.find(l => l.value === user.language)?.label || 'Tiếng Anh'}
                     </span>
                   </div>
                 )}
-              </button>
+              </Button>
 
               {/* Language Select Dropdown */}
               <AnimatePresence>
@@ -240,16 +242,17 @@ export default function ProfilePage() {
             </div>
 
             {/* Button Đăng Xuất */}
-            <button
+            <Button
               onClick={handleLogout}
-              disabled={isLoggingOut}
-              className="w-full flex items-center justify-center gap-2 sm:gap-3 px-4 sm:px-6 py-3 sm:py-4 bg-red-50 border-2 border-red-200 rounded-lg sm:rounded-xl hover:bg-red-100 hover:border-red-300 active:bg-red-100 transition-all duration-200 shadow-sm hover:shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              isLoading={isLoggingOut}
+              variant="danger"
+              className="w-full bg-red-50 text-red-600 border-red-200 hover:bg-red-100 hover:border-red-300 p-4 sm:p-6"
+              leftIcon={<LogOut className="w-4 h-4 sm:w-5 sm:h-5" />}
             >
-              <LogOut className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 flex-shrink-0" />
-              <span className="text-base sm:text-lg font-medium text-red-600">
-                {isLoggingOut ? 'Đang đăng xuất...' : 'Đăng xuất'}
+              <span className="text-base sm:text-lg font-medium">
+                Đăng xuất
               </span>
-            </button>
+            </Button>
           </div>
         </motion.div>
       </div>

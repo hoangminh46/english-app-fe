@@ -1,15 +1,16 @@
 'use client';
 
-import { KnowledgeNote } from '../../types/notes';
+import { KnowledgeNote, NoteType } from '../../types/notes';
 import { TrashIcon, PencilIcon, CheckCircleIcon } from '@heroicons/react/24/outline';
 import { CheckCircleIcon as CheckCircleIconSolid } from '@heroicons/react/24/solid';
 import { motion } from 'framer-motion';
+import { Button } from '../ui/Button';
 
 interface NoteCardProps {
   note: KnowledgeNote;
   onEdit: (note: KnowledgeNote) => void;
-  onDelete: (category: string, itemId: string) => void;
-  onToggleLearned: (category: string, itemId: string) => void;
+  onDelete: (note: KnowledgeNote) => void;
+  onToggleLearned: (category: NoteType, itemId: string) => void;
 }
 
 export function NoteCard({ note, onEdit, onDelete, onToggleLearned }: NoteCardProps) {
@@ -34,14 +35,12 @@ export function NoteCard({ note, onEdit, onDelete, onToggleLearned }: NoteCardPr
             </span>
           )}
         </div>
-        <div className="flex gap-2 ml-2 shrink-0">
-          <button
+        <div className="flex gap-1 ml-2 shrink-0">
+          <Button
+            variant="ghost"
+            size="sm"
+            className={`p-1 rounded-lg ${note.isLearned ? 'text-green-600' : 'text-gray-400'}`}
             onClick={() => onToggleLearned(note.category, note._id)}
-            className={`p-1 rounded transition-colors ${
-              note.isLearned 
-                ? 'text-green-600 hover:text-green-800 hover:bg-green-50' 
-                : 'text-gray-400 hover:text-green-600 hover:bg-green-50'
-            }`}
             title={note.isLearned ? 'Đánh dấu chưa học' : 'Đánh dấu đã học'}
           >
             {note.isLearned ? (
@@ -49,21 +48,25 @@ export function NoteCard({ note, onEdit, onDelete, onToggleLearned }: NoteCardPr
             ) : (
               <CheckCircleIcon className="w-5 h-5" />
             )}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-blue-600 p-1 rounded-lg"
             onClick={() => onEdit(note)}
-            className="text-blue-600 hover:text-blue-800 p-1 rounded hover:bg-blue-50 transition-colors"
             title="Chỉnh sửa"
           >
             <PencilIcon className="w-4 h-4" />
-          </button>
-          <button
-            onClick={() => onDelete(note.category, note._id)}
-            className="text-red-600 hover:text-red-800 p-1 rounded hover:bg-red-50 transition-colors"
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-red-600 p-1 rounded-lg"
+            onClick={() => onDelete(note)}
             title="Xóa"
           >
             <TrashIcon className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
       </div>
 

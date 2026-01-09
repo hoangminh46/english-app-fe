@@ -1,4 +1,5 @@
 import React from 'react';
+import { Button } from '@/components/ui/Button';
 
 type ModeSelectorProps = {
   onSelectMode: (mode: 'quiz' | 'practice' | 'grammar') => void;
@@ -21,9 +22,11 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-        <button
+        <Button
           onClick={() => onSelectMode('quiz')}
-          className={`group p-4 sm:p-6 border-2 rounded-xl transition-all duration-300 hover:scale-[1.02] ${
+          variant="ghost"
+          size="none"
+          className={`h-auto group p-4 sm:p-6 border-2 rounded-xl transition-all duration-300 hover:scale-[1.02] ${
             selectedMode === 'quiz'
               ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg'
               : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'
@@ -48,11 +51,13 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
               </p>
             </div>
           </div>
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={() => onSelectMode('practice')}
-          className={`group p-4 sm:p-6 border-2 rounded-xl transition-all duration-300 hover:scale-[1.02] ${
+          variant="ghost"
+          size="none"
+          className={`h-auto group p-4 sm:p-6 border-2 rounded-xl transition-all duration-300 hover:scale-[1.02] ${
             selectedMode === 'practice'
               ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg'
               : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'
@@ -78,11 +83,13 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
               </p>
             </div>
           </div>
-        </button>
+        </Button>
 
-        <button
+        <Button
           onClick={() => onSelectMode('grammar')}
-          className={`group p-4 sm:p-6 border-2 rounded-xl transition-all duration-300 hover:scale-[1.02] ${
+          variant="ghost"
+          size="none"
+          className={`h-auto group p-4 sm:p-6 border-2 rounded-xl transition-all duration-300 hover:scale-[1.02] ${
             selectedMode === 'grammar'
               ? 'border-blue-500 bg-gradient-to-br from-blue-50 to-blue-100 shadow-lg'
               : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50/50'
@@ -107,7 +114,7 @@ export const ModeSelector: React.FC<ModeSelectorProps> = ({
               </p>
             </div>
           </div>
-        </button>
+        </Button>
       </div>
     </div>
   );

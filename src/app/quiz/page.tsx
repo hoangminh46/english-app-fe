@@ -7,6 +7,7 @@ import autoTable from "jspdf-autotable";
 import { encode } from 'base64-arraybuffer'
 import { QuizResponse } from "@/types/quiz";
 import VocabularyTooltip from "@/components/quiz/VocabularyTooltip";
+import { Button } from "@/components/ui/Button";
 
 type QuizProgress = {
   currentQuestionIndex: number;
@@ -118,19 +119,6 @@ export default function QuizPage() {
     // Lưu trạng thái để hiển thị màn hình tùy chọn câu hỏi
     localStorage.setItem('progessState', JSON.stringify({
       currentStep: 5,
-      selectedMode: 'quiz'
-    }));
-    // Chuyển về trang chủ
-    router.push('/');
-  };
-
-  const selectDifferentLanguage = () => {
-    // Xóa tiến độ và dữ liệu quiz khi chọn ngôn ngữ khác
-    localStorage.removeItem('quizProgress');
-    localStorage.removeItem('quizData');
-    // Lưu trạng thái để hiển thị màn hình chọn ngôn ngữ
-    localStorage.setItem('progessState', JSON.stringify({
-      currentStep: 2,
       selectedMode: 'quiz'
     }));
     // Chuyển về trang chủ
@@ -341,33 +329,29 @@ export default function QuizPage() {
             </div>
             
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <button
+              <Button
                 onClick={restartQuiz}
-                className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-base"
+                size="lg"
+                className="w-full sm:w-auto"
               >
                 Làm lại
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={createNewQuiz}
-                className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-base"
+                size="lg"
+                className="w-full sm:w-auto"
               >
                 Tạo câu hỏi mới
-              </button>
-              <button
-                onClick={selectDifferentLanguage}
-                className="w-full sm:w-auto bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-base"
-              >
-                Chọn ngôn ngữ khác
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={exportToPDF}
-                disabled={isExporting}
-                className={`w-full sm:w-auto bg-green-600 text-white px-6 py-3 rounded-lg transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 text-base ${
-                  isExporting ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-700'
-                }`}
+                isLoading={isExporting}
+                variant="success"
+                size="lg"
+                className="w-full sm:w-auto"
               >
-                {isExporting ? 'Đang xuất PDF...' : 'Xuất PDF'}
-              </button>
+                Xuất PDF
+              </Button>
             </div>
           </div>
         </div>
@@ -384,7 +368,8 @@ export default function QuizPage() {
 
     let result = question;
     newWords.forEach(({ word, pronunciation, meaning }) => {
-      const regex = new RegExp(`\\b${word}\\b`, 'gi');
+      // Find the first occurrence only to avoid multiple underlines for duplicate words
+      const regex = new RegExp(`\\b${word}\\b`, 'i');
       result = result.replace(regex, `<vocabulary-tooltip word="${word}" pronunciation="${pronunciation}" meaning="${meaning}">${word}</vocabulary-tooltip>`);
     });
 
@@ -564,20 +549,18 @@ export default function QuizPage() {
           </div>
           
           <div className="mt-8 flex justify-center sm:justify-end">
-            <button
+            <Button
               onClick={handleNextQuestion}
               disabled={selectedAnswer === null}
-              className={`w-full sm:w-auto px-8 py-4 rounded-xl font-bold text-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-1 active:translate-y-0 ${
-                selectedAnswer === null
-                  ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-                  : "bg-gradient-to-r from-blue-500 via-blue-600 to-indigo-600 text-white hover:from-blue-600 hover:via-blue-700 hover:to-indigo-700"
-              }`}
+              size="xl"
+              variant="secondary"
+              className="w-full sm:w-auto"
               aria-label={currentQuestionIndex < quizData.questions.length - 1 ? "Câu tiếp theo" : "Kết thúc bài kiểm tra"}
             >
               {currentQuestionIndex < quizData.questions.length - 1 
                 ? "Câu tiếp theo" 
                 : "Kết thúc bài kiểm tra"}
-            </button>
+            </Button>
           </div>
         </div>
       </div>

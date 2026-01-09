@@ -1,6 +1,7 @@
 'use client';
 
 import { NoteType } from '@/types/notes';
+import { Button } from '@/components/ui/Button';
 
 interface TabNavigationProps {
   activeTab: NoteType;
@@ -22,10 +23,11 @@ export function TabNavigation({ activeTab, onTabChange, counts }: TabNavigationP
   return (
     <div className="flex border-b border-gray-200">
       {tabs.map((tab) => (
-        <button
+        <Button
           key={tab.id}
           onClick={() => onTabChange(tab.id)}
-          className={`flex-1 py-3.5 px-2 sm:py-3 sm:px-4 font-medium transition-all duration-200 relative ${
+          variant="ghost"
+          className={`flex-1 py-3.5 px-2 sm:py-3 sm:px-4 font-medium transition-all duration-200 relative rounded-none border-0 ${
             activeTab === tab.id
               ? 'text-blue-600 bg-blue-50'
               : 'text-gray-600 hover:text-gray-800 hover:bg-gray-50'
@@ -46,7 +48,7 @@ export function TabNavigation({ activeTab, onTabChange, counts }: TabNavigationP
           {activeTab === tab.id && (
             <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-blue-600" />
           )}
-        </button>
+        </Button>
       ))}
     </div>
   );

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { categories, difficulties, Topic } from '../../types/quiz';
 import { quantityOptions } from '../../types/quiz';
+import { Button } from '../ui/Button';
 
 type TopicSelectorProps = {
   selectedTopics: string[];
@@ -108,20 +109,22 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
         </h3>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 px-2 sm:px-0">
           {categories.map((category) => (
-            <button
+            <Button
               key={category.id}
               onClick={() => handleCategorySelect(category.id)}
-              className={`p-3 md:p-4 rounded-lg border text-left transition-all ${
+              variant="ghost"
+              size="none"
+              className={`h-auto flex-col items-start p-3 md:p-4 rounded-lg border-2 text-left transition-all ${
                 selectedCategory === category.id
-                  ? "border-blue-500 bg-blue-50"
-                  : "border-gray-200 hover:border-blue-200 hover:bg-gray-50"
+                  ? "bg-blue-50 border-blue-500 shadow-sm"
+                  : "bg-white border-gray-200 hover:border-blue-200 hover:bg-gray-50"
               }`}
             >
-              <h4 className="font-medium truncate">{category.name}</h4>
-              <p className="text-sm text-gray-500 mt-1">
+              <h4 className={`font-medium truncate ${selectedCategory === category.id ? 'text-blue-700' : 'text-gray-900'}`}>{category.name}</h4>
+              <p className={`text-xs mt-1 font-normal ${selectedCategory === category.id ? 'text-blue-600' : 'text-gray-500'}`}>
                 {category.topics.length} chủ đề chính
               </p>
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -134,20 +137,22 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {currentCategory.topics.map((topic) => (
-              <button
+              <Button
                 key={topic.id}
                 onClick={() => handleMainTopicSelect(topic.id)}
-                className={`p-3 md:p-4 rounded-lg border text-left transition-all ${
+                variant="ghost"
+                size="none"
+                className={`h-auto flex-col items-start p-3 md:p-4 rounded-lg border-2 text-left transition-all ${
                   selectedMainTopic === topic.id
-                    ? "border-blue-500 bg-blue-50"
-                    : "border-gray-200 hover:border-blue-200 hover:bg-gray-50"
+                    ? "bg-blue-50 border-blue-500 shadow-sm"
+                    : "bg-white border-gray-200 hover:border-blue-300 hover:bg-blue-50/50"
                 }`}
               >
-                <h4 className="font-medium truncate">{topic.name}</h4>
-                <p className="text-sm text-gray-500 mt-1">
+                <h4 className={`font-medium truncate ${selectedMainTopic === topic.id ? 'text-blue-700' : 'text-gray-900'}`}>{topic.name}</h4>
+                <p className={`text-xs mt-1 font-normal ${selectedMainTopic === topic.id ? 'text-blue-600' : 'text-gray-500'}`}>
                   {topic.subtopics?.length || 0} chủ đề con
                 </p>
-              </button>
+              </Button>
             ))}
           </div>
         </div>
@@ -169,18 +174,15 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
         <h3 className="text-lg font-medium mb-3 text-blue-600">Độ khó</h3>
         <div className="flex flex-wrap gap-3">
           {difficulties.map((item) => (
-            <button
+            <Button
               key={item.value}
               type="button"
-              className={`px-4 py-2 rounded-lg transition-all shadow-sm ${
-                selectedDifficulty === item.value
-                  ? "bg-gradient-to-r from-blue-400 to-blue-600 text-white shadow-md hover:shadow-lg"
-                  : "bg-blue-50 text-blue-700 hover:bg-blue-100"
-              }`}
+              variant={selectedDifficulty === item.value ? 'primary' : 'gray'}
+              className="px-6"
               onClick={() => onDifficultyChange(item.value)}
             >
               {item.label}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
@@ -189,18 +191,15 @@ export const TopicSelector: React.FC<TopicSelectorProps> = ({
         <h3 className="text-lg font-medium mb-3 text-blue-600">Số lượng câu hỏi</h3>
         <div className="flex flex-wrap gap-3">
           {quantityOptions.map((qty) => (
-            <button
+            <Button
               key={qty}
               type="button"
-              className={`w-12 h-12 rounded-lg flex items-center justify-center transition-all shadow-sm ${
-                selectedQuantity === qty
-                  ? "bg-gradient-to-r from-blue-400 to-blue-600 text-white shadow-md hover:shadow-lg transform hover:-translate-y-0.5"
-                  : "bg-blue-50 text-blue-700 hover:bg-blue-100"
-              }`}
+              variant={selectedQuantity === qty ? 'primary' : 'gray'}
+              className="w-12 h-12 p-0"
               onClick={() => onQuantityChange(qty)}
             >
               {qty}
-            </button>
+            </Button>
           ))}
         </div>
       </div>
