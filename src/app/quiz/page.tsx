@@ -366,11 +366,31 @@ export default function QuizPage() {
   const renderQuestionWithTooltips = (question: string, newWords: Array<{ word: string; pronunciation: string; meaning: string }>) => {
     if (!newWords || newWords.length === 0) return question;
 
-    let result = question;
-    newWords.forEach(({ word, pronunciation, meaning }) => {
-      // Find the first occurrence only to avoid multiple underlines for duplicate words
-      const regex = new RegExp(`\\b${word}\\b`, 'i');
-      result = result.replace(regex, `<vocabulary-tooltip word="${word}" pronunciation="${pronunciation}" meaning="${meaning}">${word}</vocabulary-tooltip>`);
+    // Sắp xếp các từ theo độ dài giảm dần để ưu tiên các từ dài hơn trước
+    const sortedWords = [...newWords].sort((a, b) => b.word.length - a.word.length);
+    
+    // Theo dõi các từ đã được thay thế để chỉ thay thế lần đầu tiên (theo logic cũ)
+    const replacedWords = new Set<string>();
+
+    // Tạo một regex tổng hợp để tìm tất cả các từ cần thay thế trong một lần duy nhất
+    // Điều này ngăn chặn việc thay thế nhầm vào nội dung các attribute của thẻ đã thêm
+    const escapedWords = sortedWords
+      .map(nw => nw.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      .join('|');
+    
+    // Sử dụng regex với word boundaries (\b) để đảm bảo chỉ thay thế chính xác từ đó
+    const regex = new RegExp(`\\b(${escapedWords})\\b`, 'gi');
+
+    let result = question.replace(regex, (match) => {
+      const lowerMatch = match.toLowerCase();
+      // Tìm thông tin từ vựng tương ứng (không phân biệt hoa thường)
+      const nw = sortedWords.find(n => n.word.toLowerCase() === lowerMatch);
+      
+      if (nw && !replacedWords.has(lowerMatch)) {
+        replacedWords.add(lowerMatch);
+        return `<vocabulary-tooltip word="${nw.word}" pronunciation="${nw.pronunciation}" meaning="${nw.meaning}">${match}</vocabulary-tooltip>`;
+      }
+      return match;
     });
 
     const parts = result.split(/(<vocabulary-tooltip.*?<\/vocabulary-tooltip>)/g);
