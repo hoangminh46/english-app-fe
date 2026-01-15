@@ -4,6 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { authService } from '@/services/authService';
 import { User, AuthState } from '@/types/auth';
 import { toast } from 'sonner';
+import router from 'next/router';
 
 interface AuthContextType extends AuthState {
   login: () => void;
@@ -75,6 +76,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(null);
       setToken(null);
       toast.success('Đăng xuất thành công');
+      router.push('/');
     } catch (error) {
       console.error('Error logging out:', error);
       // Vẫn xóa state dù có lỗi

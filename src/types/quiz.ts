@@ -99,7 +99,7 @@ export const difficulties = [
   { value: "advanced", label: "Nâng cao", labelEn: "Advanced" }
 ];
 
-export const quantityOptions = [10, 15, 20];
+export const quantityOptions = [5, 10, 15];
 
 export const categories: Category[] = [
   {

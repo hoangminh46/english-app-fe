@@ -1,10 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import { encode } from 'base64-arraybuffer'
+import { BaseModal } from "@/components/ui/BaseModal";
+import { ArrowLeftIcon, ExclamationTriangleIcon } from "@heroicons/react/24/outline";
 import { QuizResponse } from "@/types/quiz";
 import VocabularyTooltip from "@/components/quiz/VocabularyTooltip";
 import { Button } from "@/components/ui/Button";
@@ -15,17 +17,47 @@ type QuizProgress = {
   showResults: boolean;
   selectedAnswer: number | null;
   showExplanation: boolean;
+  shuffledOptionsIndices: number[][];
+}
+
+// Fisher-Yates shuffle algorithm
+function shuffleArray<T>(array: T[]): T[] {
+  const shuffled = [...array];
+  for (let i = shuffled.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  }
+  return shuffled;
 }
 
 export default function QuizPage() {
   const router = useRouter();
-  const [quizData, setQuizData] = useState<QuizResponse | null>(null);
-  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
-  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(null);
-  const [showExplanation, setShowExplanation] = useState(false);
-  const [userAnswers, setUserAnswers] = useState<(number | null)[]>([]);
-  const [showResults, setShowResults] = useState(false);
+
+  // Load initial state synchronously to avoid flicker
+  const { initData, initProg } = useMemo(() => {
+    if (typeof window === 'undefined') return { initData: null, initProg: null };
+    const data = JSON.parse(localStorage.getItem('quizData') || 'null');
+    const prog = JSON.parse(localStorage.getItem('quizProgress') || 'null');
+    return { initData: data, initProg: prog };
+  }, []);
+
+  const [quizData, setQuizData] = useState<QuizResponse | null>(initData);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(initProg?.currentQuestionIndex || 0);
+  const [selectedAnswer, setSelectedAnswer] = useState<number | null>(initProg?.selectedAnswer ?? null);
+  const [showExplanation, setShowExplanation] = useState(initProg?.showExplanation || false);
+  const [userAnswers, setUserAnswers] = useState<(number | null)[]>(initProg?.userAnswers || (initData ? new Array(initData.questions.length).fill(null) : []));
+  const [showResults, setShowResults] = useState(initProg?.showResults || false);
   const [isExporting, setIsExporting] = useState(false);
+  const [shuffledOptionsIndices, setShuffledOptionsIndices] = useState<number[][]>(
+    initProg?.shuffledOptionsIndices || (initData ? initData.questions.map((q: any) => shuffleArray(Array.from({ length: q.options.length }, (_, i) => i))) : [])
+  );
+  const [showExitModal, setShowExitModal] = useState(false);
+  const [pendingTargetPath, setPendingTargetPath] = useState<string | null>(null);
+
+  // Chuyển hướng nếu không có dữ liệu
+  useEffect(() => {
+    if (!quizData) router.push('/');
+  }, [quizData, router]);
 
   // Lưu tiến độ làm bài mỗi khi có sự thay đổi
   useEffect(() => {
@@ -36,44 +68,26 @@ export default function QuizPage() {
       userAnswers,
       showResults,
       selectedAnswer,
-      showExplanation
+      showExplanation,
+      shuffledOptionsIndices
     };
     
     localStorage.setItem("quizProgress", JSON.stringify(progress));
-  }, [currentQuestionIndex, userAnswers, showResults, selectedAnswer, showExplanation, quizData]);
+  }, [currentQuestionIndex, userAnswers, showResults, selectedAnswer, showExplanation, quizData, shuffledOptionsIndices]);
 
+  // Lắng nghe sự kiện điều hướng từ Header
   useEffect(() => {
-    // Lấy dữ liệu từ localStorage khi component mount
-    const storedData = localStorage.getItem("quizData");
-    if (storedData) {
-      try {
-        const parsedData = JSON.parse(storedData);
-        setQuizData(parsedData);
-        
-        // Kiểm tra xem có tiến độ đã lưu không
-        const storedProgress = localStorage.getItem("quizProgress");
-        
-        if (storedProgress) {
-          // Nếu có tiến độ đã lưu, khôi phục lại trạng thái
-          const progress: QuizProgress = JSON.parse(storedProgress);
-          setCurrentQuestionIndex(progress.currentQuestionIndex);
-          setUserAnswers(progress.userAnswers);
-          setShowResults(progress.showResults);
-          setSelectedAnswer(progress.selectedAnswer);
-          setShowExplanation(progress.showExplanation);
-        } else {
-          // Nếu không có tiến độ, khởi tạo mảng câu trả lời mới
-          setUserAnswers(new Array(parsedData.questions.length).fill(null));
-        }
-        
-        // Log ra để kiểm tra
-        console.log("Dữ liệu từ API:", parsedData);
-      } catch (error) {
-        console.error("Lỗi khi parse dữ liệu quiz:", error);
-        router.push('/');
+    const handleNav = (e: any) => {
+      // Chỉ hiện thông báo nếu chưa xong bài
+      if (!showResults) {
+        setPendingTargetPath(e.detail?.targetPath || '/');
+        setShowExitModal(true);
       }
-    }
-  }, []);
+    };
+
+    window.addEventListener('request-navigation', handleNav);
+    return () => window.removeEventListener('request-navigation', handleNav);
+  }, [showResults]);
 
   const handleAnswerSelect = (answerIndex: number) => {
     if (selectedAnswer !== null) return; // Ngăn chọn lại đáp án
@@ -92,7 +106,7 @@ export default function QuizPage() {
     
     if (currentQuestionIndex < quizData.questions.length - 1) {
       // Chuyển sang câu hỏi tiếp theo
-      setCurrentQuestionIndex(prevIndex => prevIndex + 1);
+      setCurrentQuestionIndex((prevIndex:any) => prevIndex + 1);
       setSelectedAnswer(null);
       setShowExplanation(false);
     } else {
@@ -109,6 +123,15 @@ export default function QuizPage() {
     setSelectedAnswer(null);
     setShowExplanation(false);
     setUserAnswers(new Array(quizData?.questions.length).fill(null));
+    
+    // Tạo lại thứ tự xáo trộn mới khi làm lại bài
+    if (quizData) {
+      const newIndices = quizData.questions.map(q => 
+        shuffleArray(Array.from({ length: q.options.length }, (_, i) => i))
+      );
+      setShuffledOptionsIndices(newIndices);
+    }
+    
     setShowResults(false);
   };
 
@@ -123,6 +146,13 @@ export default function QuizPage() {
     }));
     // Chuyển về trang chủ
     router.push('/');
+  };
+
+  const handleConfirmedExit = () => {
+    // Xóa tiến độ khi người dùng xác nhận thoát
+    localStorage.removeItem('quizProgress');
+    localStorage.removeItem('quizData');
+    router.push(pendingTargetPath || '/');
   };
 
   const calculateScore = () => {
@@ -177,9 +207,12 @@ export default function QuizPage() {
         
         yPos += splitQuestion.length * 7;
         
-        // Thêm các lựa chọn
-        question.options.forEach((option, optIndex) => {
-          const optionText = `${String.fromCharCode(65 + optIndex)}. ${option}`;
+        // Thêm các lựa chọn (xáo trộn nếu có)
+        const questionShuffledIndices = shuffledOptionsIndices[index] || Array.from({ length: question.options.length }, (_, i) => i);
+        
+        questionShuffledIndices.forEach((originalIndex, displayIndex) => {
+          const option = question.options[originalIndex];
+          const optionText = `${String.fromCharCode(65 + displayIndex)}. ${option}`;
           const splitOption = pdf.splitTextToSize(optionText, 170);
           pdf.text(splitOption, 20, yPos);
           yPos += splitOption.length * 7;
@@ -211,9 +244,14 @@ export default function QuizPage() {
         if (question.explanation.note) {
           explanationText += `\n\nLưu ý: ${question.explanation.note}`;
         }
+        
+        // Tìm vị trí của đáp án đúng trong mảng đã xáo trộn cho PDF
+        const questionShuffledIndices = shuffledOptionsIndices[index] || Array.from({ length: question.options.length }, (_, i) => i);
+        const displayCorrectIdx = questionShuffledIndices.indexOf(question.correct_answer);
+        
         return [
           `Câu ${index + 1}`,
-          String.fromCharCode(65 + question.correct_answer),
+          String.fromCharCode(65 + (displayCorrectIdx !== -1 ? displayCorrectIdx : question.correct_answer)),
           explanationText
         ];
       });
@@ -366,11 +404,31 @@ export default function QuizPage() {
   const renderQuestionWithTooltips = (question: string, newWords: Array<{ word: string; pronunciation: string; meaning: string }>) => {
     if (!newWords || newWords.length === 0) return question;
 
-    let result = question;
-    newWords.forEach(({ word, pronunciation, meaning }) => {
-      // Find the first occurrence only to avoid multiple underlines for duplicate words
-      const regex = new RegExp(`\\b${word}\\b`, 'i');
-      result = result.replace(regex, `<vocabulary-tooltip word="${word}" pronunciation="${pronunciation}" meaning="${meaning}">${word}</vocabulary-tooltip>`);
+    // Sắp xếp các từ theo độ dài giảm dần để ưu tiên các từ dài hơn trước
+    const sortedWords = [...newWords].sort((a, b) => b.word.length - a.word.length);
+    
+    // Theo dõi các từ đã được thay thế để chỉ thay thế lần đầu tiên (theo logic cũ)
+    const replacedWords = new Set<string>();
+
+    // Tạo một regex tổng hợp để tìm tất cả các từ cần thay thế trong một lần duy nhất
+    // Điều này ngăn chặn việc thay thế nhầm vào nội dung các attribute của thẻ đã thêm
+    const escapedWords = sortedWords
+      .map(nw => nw.word.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'))
+      .join('|');
+    
+    // Sử dụng regex với word boundaries (\b) để đảm bảo chỉ thay thế chính xác từ đó
+    const regex = new RegExp(`\\b(${escapedWords})\\b`, 'gi');
+
+    let result = question.replace(regex, (match) => {
+      const lowerMatch = match.toLowerCase();
+      // Tìm thông tin từ vựng tương ứng (không phân biệt hoa thường)
+      const nw = sortedWords.find(n => n.word.toLowerCase() === lowerMatch);
+      
+      if (nw && !replacedWords.has(lowerMatch)) {
+        replacedWords.add(lowerMatch);
+        return `<vocabulary-tooltip word="${nw.word}" pronunciation="${nw.pronunciation}" meaning="${nw.meaning}">${match}</vocabulary-tooltip>`;
+      }
+      return match;
     });
 
     const parts = result.split(/(<vocabulary-tooltip.*?<\/vocabulary-tooltip>)/g);
@@ -417,55 +475,60 @@ export default function QuizPage() {
             </h3>
             
             <div className="space-y-3 sm:space-y-4">
-              {currentQuestion.options.map((option, index) => (
-                <div 
-                  key={index}
-                  onClick={() => handleAnswerSelect(index)}
-                  className={`p-2 sm:p-5 border-2 rounded-xl cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98] ${
-                    selectedAnswer === null
-                      ? `hover:bg-blue-50 border-blue-300 hover:border-blue-400 bg-white hover:shadow-blue-100 ${
-                          index === 0 ? "hover:bg-blue-50" : 
-                          index === 1 ? "hover:bg-indigo-50" : 
-                          index === 2 ? "hover:bg-purple-50" : 
-                          "hover:bg-cyan-50"
-                        }`
-                      : selectedAnswer === index
-                        ? index === currentQuestion.correct_answer
-                          ? "border-emerald-500 bg-emerald-50 shadow-emerald-200"
-                          : "border-red-500 bg-red-50 shadow-red-200"
-                        : index === currentQuestion.correct_answer && showExplanation
-                          ? "border-emerald-500 bg-emerald-50 shadow-emerald-200"
-                          : "border-blue-300 bg-white"
-                  }`}
-                  tabIndex={0}
-                  aria-label={`Đáp án ${String.fromCharCode(65 + index)}: ${option}`}
-                  onKeyDown={(e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                      handleAnswerSelect(index);
-                    }
-                  }}
-                >
-                  <div className="flex items-center">
-                    <span className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full mr-4 font-bold text-lg sm:text-xl flex-shrink-0 ${
+              {(shuffledOptionsIndices[currentQuestionIndex] || Array.from({ length: currentQuestion.options.length }, (_, i) => i)).map((originalIndex, displayIndex) => {
+                const option = currentQuestion.options[originalIndex];
+                const isCorrect = originalIndex === currentQuestion.correct_answer;
+                const isSelected = selectedAnswer === originalIndex;
+                const isCorrectButNotSelected = isCorrect && showExplanation;
+
+                return (
+                  <div 
+                    key={originalIndex}
+                    onClick={() => handleAnswerSelect(originalIndex)}
+                    className={`p-2 sm:p-5 border-2 rounded-xl cursor-pointer transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-[1.02] active:scale-[0.98] ${
                       selectedAnswer === null
-                        ? "bg-blue-100 text-blue-700"
-                        : selectedAnswer === index
-                          ? index === currentQuestion.correct_answer
-                            ? "bg-emerald-500 text-white"
-                            : "bg-red-500 text-white" 
-                          : index === currentQuestion.correct_answer && showExplanation
-                            ? "bg-emerald-500 text-white"
-                            : "bg-blue-100 text-blue-700"
-                    }`}>{String.fromCharCode(65 + index)}</span>
-                    <span className={`text-base sm:text-lg leading-relaxed flex-1 ${
-                      selectedAnswer !== null && (
-                        (selectedAnswer === index && index === currentQuestion.correct_answer) ||
-                        (index === currentQuestion.correct_answer && showExplanation)
-                      ) ? "font-semibold text-emerald-800" : "text-blue-800"
-                    }`}>{option}</span>
+                        ? `hover:bg-blue-50 border-blue-300 hover:border-blue-400 bg-white hover:shadow-blue-100 ${
+                            displayIndex === 0 ? "hover:bg-blue-50" : 
+                            displayIndex === 1 ? "hover:bg-indigo-50" : 
+                            displayIndex === 2 ? "hover:bg-purple-50" : 
+                            "hover:bg-cyan-50"
+                          }`
+                        : isSelected
+                          ? isCorrect
+                            ? "border-emerald-500 bg-emerald-50 shadow-emerald-200"
+                            : "border-red-500 bg-red-50 shadow-red-200"
+                          : isCorrectButNotSelected
+                            ? "border-emerald-500 bg-emerald-50 shadow-emerald-200"
+                            : "border-blue-300 bg-white"
+                    }`}
+                    tabIndex={0}
+                    aria-label={`Đáp án ${String.fromCharCode(65 + displayIndex)}: ${option}`}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' || e.key === ' ') {
+                        handleAnswerSelect(originalIndex);
+                      }
+                    }}
+                  >
+                    <div className="flex items-center">
+                      <span className={`flex items-center justify-center w-10 h-10 sm:w-12 sm:h-12 rounded-full mr-4 font-bold text-lg sm:text-xl flex-shrink-0 ${
+                        selectedAnswer === null
+                          ? "bg-blue-100 text-blue-700"
+                          : isSelected
+                            ? isCorrect
+                              ? "bg-emerald-500 text-white"
+                              : "bg-red-500 text-white" 
+                            : isCorrectButNotSelected
+                              ? "bg-emerald-500 text-white"
+                              : "bg-blue-100 text-blue-700"
+                      }`}>{String.fromCharCode(65 + displayIndex)}</span>
+                      <span className={`text-base sm:text-lg leading-relaxed flex-1 ${
+                        selectedAnswer !== null && (isSelected && isCorrect || isCorrectButNotSelected) 
+                          ? "font-semibold text-emerald-800" : "text-blue-800"
+                      }`}>{option}</span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
             
             {showExplanation && (
@@ -516,7 +579,7 @@ export default function QuizPage() {
                         <p className="text-sm font-bold text-gray-800">Công thức:</p>
                       </div>
                       <div className="ml-3">
-                        <p className="text-sm font-mono leading-relaxed text-blue-900 bg-white px-3 py-2 rounded border border-blue-200">
+                        <p className="text-sm font-semibold italic leading-relaxed text-blue-900 bg-white px-3 py-2 rounded border border-blue-200">
                           {currentQuestion.explanation.formula}
                         </p>
                       </div>
@@ -564,6 +627,43 @@ export default function QuizPage() {
           </div>
         </div>
       </div>
+
+      {/* Modal xác nhận thoát */}
+      <BaseModal
+        isOpen={showExitModal}
+        onClose={() => setShowExitModal(false)}
+        title="Xác nhận thoát"
+        maxWidth="md"
+        headerGradient="from-red-600 to-red-700"
+        showCloseButton={false}
+        footer={
+          <div className="flex gap-3">
+            <Button 
+              variant="gray" 
+              fullWidth
+              onClick={() => setShowExitModal(false)}
+            >
+              Ở lại tiếp tục
+            </Button>
+            <Button 
+              variant="danger" 
+              fullWidth
+              onClick={handleConfirmedExit}
+            >
+              Thoát bài tập
+            </Button>
+          </div>
+        }
+      >
+        <div className="flex flex-col items-center text-center py-2">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-red-100 mb-4">
+            <ExclamationTriangleIcon className="h-6 w-6 text-red-600" aria-hidden="true" />
+          </div>
+          <p className="text-sm sm:text-base text-gray-700 leading-relaxed">
+            Nếu quay về trang chủ lúc này, kết quả của bạn sẽ không được lưu lại và bạn sẽ mất quá trình hiện tại. Bạn có chắc chắn muốn thoát?
+          </p>
+        </div>
+      </BaseModal>
     </div>
   );
-} 
+}

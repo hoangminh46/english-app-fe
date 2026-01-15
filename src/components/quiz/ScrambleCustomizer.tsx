@@ -98,7 +98,7 @@ export const ScrambleCustomizer: React.FC<ScrambleCustomizerProps> = ({
       <div className="space-y-4">
         <h3 className="text-lg font-semibold text-gray-800">Số lượng từ</h3>
         <div className="grid grid-cols-4 gap-3">
-          {[5, 10, 15, 20].map((quantity) => (
+          {[5, 10, 15].map((quantity) => (
             <Button
               key={quantity}
               onClick={() => onQuantityChange(quantity)}
