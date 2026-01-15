@@ -24,21 +24,21 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const variantClasses: Record<ButtonVariant, string> = {
-  primary: 'bg-blue-600 text-white border-2 border-transparent hover:bg-blue-700 shadow-sm focus-visible:ring-blue-500',
-  secondary: 'bg-indigo-600 text-white border-2 border-transparent hover:bg-indigo-700 shadow-sm focus-visible:ring-indigo-500',
-  danger: 'bg-red-600 text-white border-2 border-transparent hover:bg-red-700 shadow-sm focus-visible:ring-red-500',
-  success: 'bg-emerald-600 text-white border-2 border-transparent hover:bg-emerald-700 shadow-sm focus-visible:ring-emerald-500',
-  ghost: 'bg-transparent text-gray-600 hover:bg-gray-100 focus-visible:ring-gray-500',
-  outline: 'bg-transparent border-2 border-blue-600 text-blue-600 hover:bg-blue-50 focus-visible:ring-blue-500',
-  gray: 'bg-gray-100 text-gray-700 border-2 border-transparent hover:bg-gray-200 focus-visible:ring-gray-300',
+  primary: 'bg-primary text-primary-foreground border-b-4 border-emerald-700 hover:brightness-110 active:border-b-0 active:translate-y-1',
+  secondary: 'bg-secondary text-secondary-foreground border-b-4 border-orange-700 hover:brightness-110 active:border-b-0 active:translate-y-1',
+  danger: 'bg-destructive text-destructive-foreground border-b-4 border-red-900 hover:brightness-110 active:border-b-0 active:translate-y-1',
+  success: 'bg-green-500 text-white border-b-4 border-green-700 hover:brightness-110 active:border-b-0 active:translate-y-1',
+  ghost: 'bg-transparent text-foreground hover:bg-muted',
+  outline: 'bg-transparent border-2 border-input text-foreground hover:bg-muted active:translate-y-1',
+  gray: 'bg-muted text-muted-foreground border-b-4 border-gray-400 hover:bg-gray-200 active:border-b-0 active:translate-y-1',
 };
 
 const sizeClasses: Record<ButtonSize, string> = {
   none: '',
-  sm: 'px-3 py-1.5 text-xs sm:text-sm',
-  md: 'px-4 py-2 text-sm sm:text-base',
-  lg: 'px-6 py-2.5 text-base sm:text-lg',
-  xl: 'px-8 py-4 text-lg sm:text-xl',
+  sm: 'px-3 py-1.5 text-xs rounded-xl',
+  md: 'px-4 py-2 text-sm rounded-2xl',
+  lg: 'px-6 py-3 text-base rounded-2xl',
+  xl: 'px-8 py-4 text-lg rounded-3xl',
 };
 
 export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
@@ -57,7 +57,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
     },
     ref
   ) => {
-    const baseClasses = 'inline-flex items-center justify-center font-medium transition-all duration-200 rounded-lg focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-[0.98]';
+    const baseClasses = 'inline-flex items-center justify-center font-bold tracking-wide transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-ring focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed disabled:active:translate-y-0 disabled:active:border-b-4';
     
     const combinedClasses = [
       baseClasses,

@@ -58,12 +58,12 @@ export function NoteForm({ onSubmit, onCancel, editingNote, isSubmitting = false
   ];
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-3">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div className="mb-2.5 sm:mb-3">
         <select
           value={formData.category}
           onChange={(e) => setFormData({ ...formData, category: e.target.value as NoteType })}
-          className="w-full p-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+          className="w-full text-foreground bg-background"
           required
           disabled={!!editingNote}
         >
@@ -81,7 +81,7 @@ export function NoteForm({ onSubmit, onCancel, editingNote, isSubmitting = false
           placeholder="Tiêu đề..."
           value={formData.title}
           onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-          className="w-full p-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full text-foreground font-bold placeholder:font-normal"
           required
         />
       </div>
@@ -91,7 +91,7 @@ export function NoteForm({ onSubmit, onCancel, editingNote, isSubmitting = false
           placeholder="Nội dung..."
           value={formData.content}
           onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-          className="w-full p-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          className="w-full resize-none text-foreground leading-relaxed"
           rows={3}
           required
         />
@@ -102,26 +102,26 @@ export function NoteForm({ onSubmit, onCancel, editingNote, isSubmitting = false
           placeholder="Ví dụ (tùy chọn)..."
           value={formData.example}
           onChange={(e) => setFormData({ ...formData, example: e.target.value })}
-          className="w-full p-2 text-sm sm:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+          className="w-full resize-none bg-secondary/5 border-secondary/20 text-foreground"
           rows={2}
         />
       </div>
 
       {editingNote && (
         <div className="mb-2.5 sm:mb-3">
-          <label className="flex items-center gap-2 cursor-pointer">
+          <label className="flex items-center gap-2 cursor-pointer group">
             <input
               type="checkbox"
               checked={formData.isLearned}
               onChange={(e) => setFormData({ ...formData, isLearned: e.target.checked })}
-              className="w-4 h-4 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
+              className="w-5 h-5 text-primary border-2 border-input rounded focus:ring-ring cursor-pointer"
             />
-            <span className="text-sm sm:text-base text-gray-700">Đã học</span>
+            <span className="text-sm sm:text-base text-foreground font-medium group-hover:text-primary transition-colors">Đã học</span>
           </label>
         </div>
       )}
 
-      <div className="flex gap-2">
+      <div className="flex gap-3 pt-2">
         <Button
           type="button"
           onClick={onCancel}
@@ -135,6 +135,7 @@ export function NoteForm({ onSubmit, onCancel, editingNote, isSubmitting = false
           type="submit"
           isLoading={isSubmitting}
           fullWidth
+          variant="primary" // Explicit primary
         >
           {editingNote ? 'Cập nhật' : 'Lưu'}
         </Button>
