@@ -5,6 +5,7 @@ import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
 import { KnowledgeNotesWidget } from "@/components/KnowledgeNotes/KnowledgeNotesWidget";
 import { Header } from "@/components/layout/Header";
+import { AuthGuard } from "@/components/auth/AuthGuard";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -35,7 +36,9 @@ export default function RootLayout({
         <QueryProvider>
           <AuthProvider>
             <Header />
-            {children}
+            <AuthGuard>
+              {children}
+            </AuthGuard>
             <KnowledgeNotesWidget />
           </AuthProvider>
         </QueryProvider>
