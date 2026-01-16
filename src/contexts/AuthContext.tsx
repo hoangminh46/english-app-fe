@@ -4,7 +4,7 @@ import React, { createContext, useContext, useEffect, useState, useCallback } fr
 import { authService } from '@/services/authService';
 import { User, AuthState } from '@/types/auth';
 import { toast } from 'sonner';
-import router from 'next/router';
+import { useRouter } from 'next/navigation';
 
 interface AuthContextType extends AuthState {
   login: () => void;
@@ -31,6 +31,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const router = useRouter();
 
   // Load user từ localStorage khi component mount
   useEffect(() => {
@@ -47,8 +48,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           try {
             const currentUser = await authService.getCurrentUser();
             setUser(currentUser);
-            // Update localStorage với user mới nhất
-            localStorage.setItem('auth_user', JSON.stringify(currentUser));
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('auth_user', JSON.stringify(currentUser));
+            }
           } catch {
             // Token không hợp lệ, xóa và reset
             authService.logout();
@@ -89,7 +91,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       const currentUser = await authService.getCurrentUser();
       setUser(currentUser);
-      localStorage.setItem('auth_user', JSON.stringify(currentUser));
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('auth_user', JSON.stringify(currentUser));
+      }
     } catch (error) {
       console.error('Error refreshing user:', error);
       toast.error('Không thể tải thông tin người dùng');
@@ -110,7 +114,9 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         try {
           const currentUser = await authService.getCurrentUser();
           setUser(currentUser);
-          localStorage.setItem('auth_user', JSON.stringify(currentUser));
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('auth_user', JSON.stringify(currentUser));
+          }
         } catch {
           // Token không hợp lệ, xóa và reset
           await authService.logout();
