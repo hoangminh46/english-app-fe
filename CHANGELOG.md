@@ -4,6 +4,24 @@ Tất cả các thay đổi quan trọng của dự án sẽ được ghi lại 
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-01-19
+### Added
+- **AI Assistant (Mine):**
+  - Tích hợp Floating Widget chat thông minh.
+  - Hỗ trợ giải thích ngữ pháp, từ vựng theo ngữ cảnh.
+  - Auto-scroll và giao diện chat mượt mà (Framer Motion).
+  - Hỗ trợ Markdown rendering (Bold, List, Code, Blockquote).
+- **UI/UX Cải tiến:**
+  - Cập nhật font chữ **Be Vietnam Pro** (cho Text) và **Roboto Mono** (cho Code).
+  - Tối ưu hiển thị trên Mobile (Responsive Design).
+  - Fix lỗi hiển thị danh sách và bảng biểu.
+  - Fix lỗi crash trang Quiz khi thiếu dữ liệu.
+
+### Changed
+- Cập nhật `GlobalStyles` và cấu hình Font trong `layout.tsx`.
+- Refactor `FloatingAssistant` sử dụng `flex-col-reverse` để tối ưu trải nghiệm chat.
+- Cập nhật tài liệu API và Architecture.
+
 ### Added
 - Thêm `AuthGuard` component để quản lý quyền truy cập route.
 - Tích hợp Google OAuth2 login flow.

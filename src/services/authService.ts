@@ -11,7 +11,7 @@ export const authService = {
    */
   loginWithGoogle: () => {
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-    window.location.href = `${apiUrl}/api/auth/google`;
+    window.location.href = `${apiUrl}/api/v1/auth/google`;
   },
 
   /**
@@ -24,7 +24,7 @@ export const authService = {
       localStorage.setItem(AUTH_TOKEN_KEY, token);
 
       // Lấy thông tin user từ backend
-      const response = await apiClient.get<{ success: boolean; data: User }>('/api/auth/me');
+      const response = await apiClient.get<{ success: boolean; data: User }>('/api/v1/auth/me');
       const user = response.data.data;
 
       // Lưu user vào localStorage
@@ -45,7 +45,7 @@ export const authService = {
    * Lấy thông tin user hiện tại từ backend
    */
   getCurrentUser: async (): Promise<User> => {
-    const response = await apiClient.get<{ success: boolean; data: User }>('/api/auth/me');
+    const response = await apiClient.get<{ success: boolean; data: User }>('/api/v1/auth/me');
     return response.data.data;
   },
 
@@ -53,8 +53,8 @@ export const authService = {
    * Cập nhật audience của user
    */
   updateAudience: async (audience: string): Promise<User> => {
-    // Gọi API PUT /api/auth/audience để cập nhật audience
-    const response = await apiClient.put<{ success: boolean; data: User }>('/api/auth/audience', { audience });
+    // Gọi API PUT /api/v1/auth/audience để cập nhật audience
+    const response = await apiClient.put<{ success: boolean; data: User }>('/api/v1/auth/audience', { audience });
     const updatedUser = response.data.data;
     
     // Update localStorage với user mới từ response
@@ -66,8 +66,8 @@ export const authService = {
    * Cập nhật language của user
    */
   updateLanguage: async (language: string): Promise<User> => {
-    // Gọi API PUT /api/auth/language để cập nhật language
-    const response = await apiClient.put<{ success: boolean; data: User }>('/api/auth/language', { language });
+    // Gọi API PUT /api/v1/auth/language để cập nhật language
+    const response = await apiClient.put<{ success: boolean; data: User }>('/api/v1/auth/language', { language });
     const updatedUser = response.data.data;
     
     // Update localStorage với user mới từ response
@@ -81,7 +81,7 @@ export const authService = {
   logout: async () => {
     try {
       // Gọi API logout
-      await apiClient.post('/api/auth/logout');
+      await apiClient.post('/api/v1/auth/logout');
     } catch (error) {
       console.error('Error calling logout API:', error);
       // Tiếp tục xóa data dù API có lỗi

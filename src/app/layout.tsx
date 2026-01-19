@@ -1,21 +1,25 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Be_Vietnam_Pro, Roboto_Mono } from "next/font/google";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { Toaster } from "@/components/ui/sonner";
 import { KnowledgeNotesWidget } from "@/components/KnowledgeNotes/KnowledgeNotesWidget";
 import { Header } from "@/components/layout/Header";
 import { AuthGuard } from "@/components/auth/AuthGuard";
+import { FloatingAssistant } from "@/components/layout/FloatingAssistant";
+import { UIProvider } from "@/contexts/UIContext";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
+const beVietnamPro = Be_Vietnam_Pro({
+  variable: "--font-be-vietnam-pro",
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "600", "700", "800", "900"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+const robotoMono = Roboto_Mono({
+  variable: "--font-roboto-mono",
+  subsets: ["latin", "vietnamese"],
+  weight: ["400", "500", "700"],
 });
 
 export const metadata: Metadata = {
@@ -31,15 +35,18 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`${beVietnamPro.variable} ${robotoMono.variable} antialiased`}
       >
         <QueryProvider>
           <AuthProvider>
-            <Header />
-            <AuthGuard>
-              {children}
-            </AuthGuard>
-            <KnowledgeNotesWidget />
+            <UIProvider>
+              <Header />
+              <AuthGuard>
+                {children}
+              </AuthGuard>
+              <KnowledgeNotesWidget />
+              <FloatingAssistant />
+            </UIProvider>
           </AuthProvider>
         </QueryProvider>
         <Toaster 

@@ -1,0 +1,45 @@
+{
+  "updated_at": "2026-01-19T16:40:00+07:00",
+  "working_on": {
+    "feature": "AI Assistant (Mine)",
+    "task": "Refine UI/UX and Formatting",
+    "status": "completed",
+    "files": [
+      "src/components/layout/FloatingAssistant.tsx",
+      "src/app/layout.tsx",
+      "docs/api/chat_assistant_api.md",
+      "docs/specs/ai_assistant_mine_spec.md"
+    ],
+    "notes": "Completed UI polish: auto-scroll (flex-reverse), font fix (Be Vietnam Pro), responsive height."
+  },
+  "recent_changes": [
+    {
+      "timestamp": "2026-01-19T16:30:00+07:00",
+      "type": "refactor",
+      "description": "Switched to flex-col-reverse for chat messages to force bottom alignment",
+      "files": ["src/components/layout/FloatingAssistant.tsx"]
+    },
+    {
+      "timestamp": "2026-01-19T16:00:00+07:00",
+      "type": "fix",
+      "description": "Fixed font rendering for Vietnamese characters",
+      "files": ["src/app/layout.tsx", "src/app/globals.css"]
+    },
+    {
+      "timestamp": "2026-01-19T15:50:00+07:00",
+      "type": "fix",
+      "description": "Fixed QuizPage crash on undefined data",
+      "files": ["src/app/quiz/page.tsx"]
+    }
+  ],
+  "decisions_made": [
+    {
+      "decision": "Use Be Vietnam Pro font",
+      "reason": "Geist font does not support Vietnamese characters well."
+    },
+    {
+      "decision": "Use flex-col-reverse for Chat",
+      "reason": "Better UX for chat history, ensures content starts at bottom."
+    }
+  ]
+}

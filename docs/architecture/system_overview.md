@@ -27,6 +27,11 @@ Mine là một ứng dụng Web Front-end hỗ trợ học tiếng Anh, tập tr
 - **Quiz:** Hệ thống câu hỏi trắc nghiệm.
 - **Scramble:** Trò chơi sắp xếp từ/câu.
 
+### 3.4. AI Assistant (Mine)
+- Trợ lý ảo tích hợp ngay trên màn hình (Floating).
+- Hỗ trợ giải đáp thắc mắc về ngữ pháp, từ vựng theo ngữ cảnh bài học.
+- Giao diện chat thân thiện, hỗ trợ Markdown và Emoji.
+
 ## 4. Project Structure
 - `src/app/`: File-system routing và layout.
 - `src/components/`: Reusable UI components.

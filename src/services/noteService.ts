@@ -10,7 +10,7 @@ import {
   NotesQueryParams
 } from '../types/notes';
 
-const NOTES_ENDPOINT = '/api/notes';
+const NOTES_ENDPOINT = '/api/v1/notes';
 
 // API Response types
 interface ApiResponse<T> {
