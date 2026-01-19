@@ -181,7 +181,7 @@ function HomeContent() {
   const generateQuizMutation = useMutation({
     mutationFn: async (data: FormData) => {
       const response = await apiClient.post<QuizResponse>(
-        '/api/quiz/generate',
+        '/api/v1/quiz/generate',
         data
       );
       return response.data;
@@ -197,7 +197,7 @@ function HomeContent() {
   const generateQuickQuizMutation = useMutation({
     mutationFn: async () => {
       const response = await apiClient.post<QuizResponse>(
-        '/api/quiz/quick'
+        '/api/v1/quiz/quick'
       );
       return response.data;
     },
@@ -212,7 +212,7 @@ function HomeContent() {
   const generateScrambleMutation = useMutation({
     mutationFn: async (data: { topics: string[], difficulty: string, quantity: number }) => {
       const response = await apiClient.post<ScrambleResponse>(
-        '/api/scramble/generate',
+        '/api/v1/scramble/generate',
         data
       );
       return response.data;

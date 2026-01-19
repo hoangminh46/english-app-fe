@@ -5,15 +5,17 @@ import { FloatingNoteButton } from './FloatingNoteButton';
 import { NotesModal } from './NotesModal';
 import { useKnowledgeNotes } from '@/hooks/useKnowledgeNotes';
 import { useAuth } from '@/contexts/AuthContext';
+import { useUI } from '@/contexts/UIContext';
 
 export function KnowledgeNotesWidget() {
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { activeWidget, openWidget, closeWidget } = useUI();
+  const isModalOpen = activeWidget === 'notes';
   const { isAuthenticated, isLoading: authLoading } = useAuth();
   
   // Fetch notes immediately when user is authenticated
   const { 
     notes, 
-    isLoading, 
+    isLoading: notesLoading, 
     addNote, 
     updateNote, 
     deleteNote,
@@ -27,16 +29,16 @@ export function KnowledgeNotesWidget() {
     <>
       {isAuthenticated && !authLoading && (
         <FloatingNoteButton
-          onClick={() => setIsModalOpen(true)}
+          onClick={() => openWidget('notes')}
           noteCount={safeNotes.length}
         />
       )}
 
       <NotesModal
         isOpen={isModalOpen}
-        onClose={() => setIsModalOpen(false)}
+        onClose={closeWidget}
         notes={safeNotes}
-        isLoading={isLoading}
+        isLoading={notesLoading}
         onAddNote={addNote}
         onUpdateNote={updateNote}
         onDeleteNote={deleteNote}
