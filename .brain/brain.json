@@ -6,48 +6,57 @@
   "project": {
     "name": "english_app_fe",
     "type": "frontend",
-    "status": "active"
+    "status": "stable"
   },
   "tech_stack": {
     "frontend": {
-      "framework": "Next.js 16 (App Router)",
+      "framework": "Next.js 16.1.1 (App Router)",
       "language": "TypeScript",
       "styling": "Tailwind CSS 4",
-      "animations": "Framer Motion",
+      "animations": "Framer Motion 12",
       "icons": "Lucide React",
-      "components": "Radix UI"
+      "components": "Radix UI",
+      "react_version": "19"
     },
     "state_management": {
       "global": "React Context API",
-      "server_state": "TanStack Query"
+      "server_state": "TanStack Query 5"
     },
-    "http_client": "Axios"
+    "http_client": "Axios 1.9"
   },
   "api_endpoints": [
     { "method": "GET", "path": "/api/v1/auth/google", "description": "Google Login Redirect" },
     { "method": "GET", "path": "/api/v1/auth/me", "description": "Get Current User" },
+    { "method": "PUT", "path": "/api/v1/auth/audience", "description": "Update learning audience" },
+    { "method": "PUT", "path": "/api/v1/auth/language", "description": "Update language preference" },
     { "method": "POST", "path": "/api/v1/auth/logout", "description": "Logout" },
     { "method": "GET", "path": "/api/v1/notes", "description": "Get All Notes" },
     { "method": "POST", "path": "/api/v1/notes", "description": "Create Note" },
-    { "method": "POST", "path": "/api/v1/chat/ask", "description": "AI Assistant Chat" }
+    { "method": "GET", "path": "/api/v1/notes/stats", "description": "Get Notes Statistics" },
+    { "method": "PATCH", "path": "/api/v1/notes/category/:category/item/:itemId/toggle-learned", "description": "Toggle learned status" },
+    { "method": "DELETE", "path": "/api/v1/notes/category/:category/item/:itemId", "description": "Delete note item" },
+    { "method": "POST", "path": "/api/v1/chat/ask", "description": "AI Assistant Chat (Context Aware)" }
   ],
   "features": [
     "Authentication (Google OAuth2)",
     "Knowledge Notes (Floating Widget)",
     "Practice Quiz",
     "Word Scramble Game",
-    "AI Assistant (Mine) - Context Aware Chat"
+    "AI Assistant (Mine) - Context Aware Chat",
+    "Vietnamese Language Support"
   ],
   "knowledge_items": {
     "patterns": [
       "Floating Widget Pattern for persistent tools",
       "Optimistic UI updates for chat",
-      "Flex-col-reverse for chat history"
+      "Flex-col-reverse for chat history",
+      "Zod Schema Validation for all forms"
     ],
     "conventions": [
       "Use 'em' - 'anh' persona for AI",
       "Strictly NO markdown tables in chat",
-      "Use Bullet points for lists"
+      "Use Bullet points for lists",
+      "Use useRouter from 'next/navigation' (strictly NO 'next/router')"
     ]
   }
 }
